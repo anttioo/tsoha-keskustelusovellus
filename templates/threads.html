@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>Alueet</title>
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Keskustelusovellus</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+            </ul>
+        </div>
+    </div>
+</nav>
+<main class="container">
+    <div class="my-3 p-3 bg-body rounded shadow-sm">
+        <div class="d-flex flex-row justify-content-between align-items-center border-bottom pb-2">
+            <h5 class="mb-0">Keskustelut</h5>
+            <button class="btn btn-sm btn-success">Uusi alue</button>
+        </div>
+        <div class="d-flex flex-column">
+            {% for board in boards %}
+                <div class="py-3 mb-0 small lh-sm border-bottom d-flex justify-content-between">
+                    <div><a class="text-decoration-none" href="/boards/{{ board.id }}"><strong
+                            class="text-uppercase">{{ board.name }}</strong></a></div>
+                    <div>{{ board.thread_count }} keskustelua {{ board.comment_count }} kommenttia</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+</body>
+</html>
