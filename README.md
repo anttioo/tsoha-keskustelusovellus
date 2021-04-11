@@ -16,3 +16,23 @@ Toteutetaan esimerkin mukainen keskustelusovellus, eli toteutettavat ominaisuude
  - [ ] Käyttäjätunnuksen lisäksi käyttäjälle nimi, joka näkyy ylävalikossa
  - [ ] Käyttäjille roolit
  - [ ] Refaktoroidaan db jutut ja routet erilleen
+
+## Heroku
+``` http
+GET https://tsoha-keskustelusovellus-ao.herokuapp.com/
+```
+
+#### Rekisteröityminen
+``` http
+GET https://tsoha-keskustelusovellus-ao.herokuapp.com/register
+```
+
+#### Kirjautuminen
+``` http
+GET https://tsoha-keskustelusovellus-ao.herokuapp.com/login
+```
+
+#### Alueet
+``` http
+GET https://tsoha-keskustelusovellus-ao.herokuapp.com/boards
+```
