@@ -36,3 +36,16 @@ GET https://tsoha-keskustelusovellus-ao.herokuapp.com/login
 ``` http
 GET https://tsoha-keskustelusovellus-ao.herokuapp.com/boards
 ```
+Tänne voi luoda keskustelualueen, johon taas voi luoda threadeja
+
+#### Alueet
+``` http
+GET https://tsoha-keskustelusovellus-ao.herokuapp.com/boards/:board_id/threads
+```
+Listus alueen threadeista
+
+#### Alueet
+``` http
+GET https://tsoha-keskustelusovellus-ao.herokuapp.com/threads/:thread_id
+```
+Threadin keskustelut
