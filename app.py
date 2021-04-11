@@ -3,13 +3,17 @@ from flask import redirect, render_template, request, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
-from os import getenv
+from os import getenv, environ
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://localhost"
+app.config["SQLALCHEMY_DATABASE_URI"] = getenv("SQLALCHEMY_DATABASE_URI")
 db = SQLAlchemy(app)
 
 app.secret_key = getenv("SECRET_KEY")
+
 
 @app.route('/')
 def hello_world():
