@@ -5,7 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://localhost/postgres"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://localhost"
 db = SQLAlchemy(app)
 
 app.secret_key = "95d3763bb55e744e77dd181a47b4e1c6"
