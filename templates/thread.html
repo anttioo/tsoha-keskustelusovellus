@@ -8,6 +8,31 @@
           integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
           crossorigin="anonymous"/>
     <title>Viestit: {{ thread.name }}</title>
+    <style type="text/css">
+        #thread-controls.not-editing > #editing-controls {
+            display: none;
+            visibility: hidden;
+            width: 0;
+            height: 0;
+        }
+
+        #thread-controls.editing > #not-editing-controls {
+            display: none;
+            visibility: hidden;
+            width: 0;
+            height: 0;
+        }
+
+        .message.not-editing > .editing {
+            display: none;
+            visibility: hidden;
+        }
+
+        .message.editing > .not-editing {
+            display: none;
+            visibility: hidden;
+        }
+    </style>
 </head>
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -19,7 +44,6 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <!-- VASEN NAV -->
             </ul>
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <!-- OIKEA NAV -->
@@ -38,21 +62,79 @@
 </nav>
 <main class="container">
     <div class="my-3 p-3 bg-body rounded shadow-sm">
-        <div class="d-flex flex-row justify-content-between align-items-center border-bottom pb-2">
-            <h5 class="mb-0">Viestit: {{ thread.name }}</h5>
+        <!-- THREAD CONTROLS START -->
+        <div class="d-flex flex-row align-items-center border-bottom pb-2">
+            <div id="thread-controls" class="not-editing w-100">
+                <div id="not-editing-controls" class="d-flex flex-row align-items-center">
+                    <h5 class="mb-0">{{ thread.name }}</h5>
+                    <button id="edit-name-btn" class="btn btn-primary btn-sm ms-2">
+                        <i class="far fa-edit"></i> Muokaa nimeä
+                    </button>
+                    <button class="btn btn-danger btn-sm ms-2" data-bs-toggle="modal"
+                            data-bs-target="#delete-thread-modal"><i class="far fa-trash-alt"></i> Poista ketju
+                    </button>
+                </div>
+                <div id="editing-controls">
+                    <form method="post" action="/threads/{{ thread.id }}/name"
+                          class="d-flex flex-row align-items-center">
+                        <input id="edit-name-field" name="name" type="text" class="form-control"
+                               value="{{ thread.name }}"/>
+                        <button type="submit" class="btn btn-success btn-sm ms-2">
+                            <i class="far fa-edit"></i> Tallenna muutos
+                        </button>
+                        <button id="cancel-edit-name-btn" class="btn btn-secondary btn-sm ms-2"><i
+                                class="far fa-trash-alt"></i> Peruuta
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
+        <!-- THREAD CONTROLS END -->
+        <!-- MESSAGES LIST START -->
         <div class="d-flex flex-column my-2 ">
             {% for message in messages %}
-                <div>
-                    <div class="d-flex justify-content-between">
-                        <div><strong>{{ message.author }}</strong></div>
-                        <div class="text-muted">{{ message.created_at.strftime('%d.%m.%Y %H:%M') }} <a href="/boar" class="text-danger text-decoration-none"><i
-                                class="far fa-trash-alt"></i> poista</a></div>
+                <div id="message-id-{{ message.id }}" class="message not-editing mb-2">
+                    <div class="not-editing">
+                        <div class="d-flex justify-content-between">
+                            <div><strong>{{ message.author }}</strong></div>
+                            <div class="text-muted">{{ message.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                <button class="btn btn-sm btn-link text-decoration-none edit-msg-btn"
+                                        data-message-id="{{ message.id }}">
+                                    <i class="far fa-edit"></i> muokkaa
+                                </button>
+                                <button class="btn btn-sm btn-link text-danger text-decoration-none delete-msg-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#delete-message-modal" data-message-id="{{ message.id }}">
+                                    <i class="far fa-trash-alt"></i> poista
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-light rounded-2 p-3 border border-1 border-light"
+                             style="white-space: pre-line">{{ message.content }}</div>
                     </div>
-                    <div class="bg-light mb-2 rounded-2 p-3">{{ message.content }}</div>
+                    <div class="editing">
+                        <form method="post" action="/messages/{{ message.id }}/content">
+                            <div class="d-flex justify-content-between">
+                                <div><strong>{{ message.author }}</strong></div>
+                                <div class="text-muted">
+                                    <button class="btn btn-sm btn-link text-success text-decoration-none edit-msg-btn"
+                                            data-message-id="{{ message.id }}">
+                                        <i class="fas fa-check"></i>tallenna
+                                    </button>
+
+                                    <button class="btn btn-sm btn-link text-decoration-none cancel-edit-btn">
+                                        <i class="fas fa-times"></i> peruuta
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea id="messagearea-id-{{ message.id }}" name="content"
+                                      class="form-control p-3">{{ message.content }}</textarea>
+                        </form>
+                    </div>
                 </div>
             {% endfor %}
         </div>
+        <!-- MESSAGES LIST END -->
         <div>
             <form action="/threads/{{ thread.id }}" method="POST">
                 <div class="mb-2">
@@ -64,5 +146,116 @@
         </div>
     </div>
 </main>
+
+<!-- DELETE THREAD MODAL -->
+<div class="modal fade" id="delete-thread-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Poista ketju</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Haluatko varmasti poistaa ketjun:<br>
+                    <strong>{{ thread.name }}?</strong>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" action="/threads/{{ thread.id }}/delete">
+                    <button type="submit" class="btn btn-danger" id="delete-thread-accept-btn">Poista ketju</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MESSAGE MODAL -->
+<div class="modal fade" id="delete-message-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Poista Viesti</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Haluatko varmasti poistaa viestin?<br>
+                    <span id="delete-message-content"></span>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" id="delete-msg-form">
+                    <button type="submit" class="btn btn-danger" id="delete-thread-confirm-btn">Poista Viesti</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var threadControls = document.getElementById("thread-controls")
+    var editNameField = document.getElementById("edit-name-field")
+    var handleCancel = function () {
+        threadControls.classList.remove("editing")
+        threadControls.classList.add("not-editing")
+        editNameField.blur()
+        editNameField.value = "{{ thread.name }}"
+    }
+    document.getElementById("edit-name-btn").addEventListener("click", function () {
+        threadControls.classList.remove("not-editing")
+        threadControls.classList.add("editing")
+        editNameField.focus()
+    })
+    document.getElementById("cancel-edit-name-btn").addEventListener("click", function (e) {
+        e.preventDefault()
+        handleCancel()
+    })
+    var deleteMsgForm = document.getElementById("delete-msg-form")
+    var deleteMessageBtns = document.getElementsByClassName("delete-msg-btn")
+    Array.prototype.forEach.call(deleteMessageBtns, function (btn) {
+        btn.addEventListener("click", function (e) {
+            deleteMsgForm.action = "/messages/" + btn.dataset.messageId + "/delete"
+        })
+    })
+    var editing = null
+    var editMessageButtons = document.getElementsByClassName("edit-msg-btn")
+    Array.prototype.forEach.call(editMessageButtons, function (btn) {
+        btn.addEventListener("click", function () {
+            if (editing !== null) {
+                editing.classList.add("not-editing")
+                editing.classList.remove("editing")
+            }
+            var messageId = btn.dataset.messageId
+            var messageContainer = document.getElementById("message-id-" + messageId)
+            var messageArea = document.getElementById("messagearea-id-" + messageId)
+            messageContainer.classList.remove("not-editing")
+            messageContainer.classList.add("editing")
+            editing = messageContainer
+            messageArea.style.height = 0;
+            messageArea.style.height = messageArea.scrollHeight + 20 + 'px';
+            messageArea.focus()
+        })
+    })
+    var cancelEditButtons = document.getElementsByClassName("cancel-edit-btn")
+    Array.prototype.forEach.call(cancelEditButtons, function (btn) {
+        btn.addEventListener("click", function (e) {
+            e.preventDefault()
+            if (editing !== null) {
+                editing.classList.add("not-editing")
+                editing.classList.remove("editing")
+            }
+        })
+    })
+    var textareas = document.querySelectorAll('textarea');
+    Array.prototype.forEach.call(textareas, function (textarea) {
+        textarea.oninput = function () {
+            textarea.style.height = 0;
+            textarea.style.height = textarea.scrollHeight + 30 + 'px';
+        }
+    })
+
+</script>
 </body>
 </html>

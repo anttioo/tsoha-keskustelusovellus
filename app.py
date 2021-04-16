@@ -3,7 +3,7 @@ from flask import redirect, render_template, request, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
-from os import getenv, environ
+from os import getenv
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -134,16 +134,17 @@ def create_thread(board_id):
 
 @app.route('/threads/<int:thread_id>', methods=["GET"])
 def show_thread(thread_id):
-    thread_query = "SELECT id, name FROM threads t WHERE id = :thread_id"
+    thread_query = "SELECT id, name, created_by FROM threads t WHERE id = :thread_id"
     result = db.session.execute(thread_query, {"thread_id": thread_id})
     thread = result.fetchall()[0]
+    created_by_me = session["uid"] == thread["created_by"]
     messages_query = "SELECT m.id, m.content, m.created_at, u.username as author " \
                      "FROM messages m LEFT JOIN users u on m.author_id = u.id " \
                      "WHERE thread_id = :thread_id " \
                      "ORDER BY m.created_at ASC "
     result = db.session.execute(messages_query, {"thread_id": thread_id})
     comments = result.fetchall()
-    return render_template("thread.html", thread=thread, messages=comments)
+    return render_template("thread.html", thread=thread, messages=comments, created_by_me=created_by_me)
 
 
 @app.route('/threads/<int:thread_id>', methods=["POST"])
@@ -160,6 +161,51 @@ def post_message(thread_id):
     })
     db.session.commit()
     return redirect("/threads/" + str(thread_id))
+
+
+@app.route('/threads/<int:thread_id>/name', methods=["POST"])
+def edit_thread_name(thread_id):
+    new_name = request.form["name"]
+    message_query = "UPDATE threads SET name = :new_name WHERE id = :thread_id"
+    db.session.execute(message_query, {
+        "new_name": new_name,
+        "thread_id": thread_id,
+    })
+    db.session.commit()
+    return redirect("/threads/" + str(thread_id))
+
+
+@app.route('/threads/<int:thread_id>/delete', methods=["POST"])
+def delete_thread(thread_id):
+    message_query = "DELETE FROM threads WHERE id = :thread_id RETURNING board_id"
+    result = db.session.execute(message_query, {
+        "thread_id": thread_id,
+    })
+    db.session.commit()
+
+    return redirect("/boards/" + str(result.fetchall()[0]["board_id"]))
+
+
+@app.route('/messages/<int:message_id>/delete', methods=["POST"])
+def delete_message(message_id):
+    message_query = "DELETE FROM messages WHERE id = :message_id RETURNING thread_id"
+    result = db.session.execute(message_query, {
+        "message_id": message_id,
+    })
+    db.session.commit()
+    return redirect("/threads/" + str(result.fetchall()[0]["thread_id"]))
+
+
+@app.route('/messages/<int:message_id>/content', methods=["POST"])
+def update_message(message_id):
+    new_content = request.form["content"]
+    message_query = "UPDATE messages SET content = :new_content WHERE id = :message_id RETURNING thread_id"
+    result = db.session.execute(message_query, {
+        "message_id": message_id,
+        "new_content": new_content
+    })
+    db.session.commit()
+    return redirect("/threads/" + str(result.fetchall()[0]["thread_id"]))
 
 
 @app.route("/logout")
