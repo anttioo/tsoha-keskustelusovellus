@@ -7,7 +7,6 @@ Toteutetaan esimerkin mukainen keskustelusovellus, eli toteutettavat ominaisuude
  - [X] Käyttäjä voi kirjoittaa uuden viestin olemassa olevaan ketjuun.
  - [X] Kuka tahansa voi muokata ketjun otsikkoa sekä  viestien sisältöä. Käyttäjä voi myös poistaa ketjun tai viestin.
     - [ ] Käyttäjä voi muokata luomansa ketjun otsikkoa sekä lähettämänsä viestin sisältöä. Käyttäjä voi myös poistaa ketjun tai viestin.
-    - **Poistonappi on näkyvissä mutta ei toimi**
  - [ ] Käyttäjä voi etsiä kaikki viestit, joiden osana on annettu sana.
  - [X] Kuka tahansa voi lisätä ja poistaa keskustelualueita.
     - [ ] Vain ylläpitäjä voi lisätä ja poistaa keskustelualueita.
