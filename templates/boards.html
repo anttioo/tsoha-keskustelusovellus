@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
           integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
           crossorigin="anonymous"/>
+    <script src="/static/slimselect.min.mjs"></script>
+    <link rel="stylesheet" type="text/css"
+          href="/static/slimselect.css">
     <title>Alueet</title>
 </head>
 <body class="bg-light">
@@ -19,10 +22,14 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <!-- VASEN NAV -->
+                <li class="nav-item">
+                    <form class="d-flex" action="/search" method="get">
+                        <input class="form-control me-2" type="search" name="term" placeholder="Etsi viesteistä" aria-label="Search">
+                        <button class="btn btn-outline-success" type="submit">Etsi</button>
+                    </form>
+                </li>
             </ul>
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <!-- OIKEA NAV -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
@@ -79,6 +86,14 @@
                         <label for="exampleFormControlInput1" class="form-label">Alueen nimi</label>
                         <input type="text" class="form-control" name="board_name">
                     </div>
+                    <div>
+                        <select id="placeholder">
+                            <option data-placeholder="true"></option>
+                            <option value="value1">Value 1</option>
+                            <option value="value2">Value 2</option>
+                            <option value="value3">Value 3</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
@@ -114,6 +129,10 @@
                 window.location = "/boards/" + btn.dataset.boardId + "/delete"
             }
         })
+    })
+    new SlimSelect({
+        select: '#placeholder',
+        placeholder: 'Placeholder Text Here'
     })
 </script>
 </body>

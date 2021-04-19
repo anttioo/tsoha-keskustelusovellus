@@ -208,6 +208,22 @@ def update_message(message_id):
     return redirect("/threads/" + str(result.fetchall()[0]["thread_id"]))
 
 
+@app.route('/search', methods=["GET"])
+def search():
+    search_term = request.args.get("term")
+    search_query = "SELECT m.id as message_id, m.content as content, m.created_at as created_at, " \
+                   "t.id as thread_id, t.name as thread_name, b.name as board_name, b.id as board_id, " \
+                   "u.username as author " \
+                   "FROM messages m " \
+                   "LEFT JOIN users u ON m.author_id = u.id " \
+                   "LEFT JOIN threads t on t.id = m.thread_id " \
+                   "LEFT JOIN boards b on t.board_id = b.id " \
+                   "WHERE content LIKE :search_term GROUP BY m.id"
+    result = db.session.execute(search_query, {"search_term": "%" + search_term + "%"})
+    messages = result.fetchall()
+    return render_template("search_results.html", search_term=search_term, messages=messages)
+
+
 @app.route("/logout")
 def logout():
     if "username" in session:
