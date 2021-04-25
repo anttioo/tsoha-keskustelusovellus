@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/static/styles.css">
     <script type="application/javascript" src="/static/bootstrap.min.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+          integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
+          crossorigin="anonymous"/>
     <title>Alueet</title>
 </head>
 <body class="bg-light">
@@ -50,7 +52,8 @@
                     <div>
                         {% if thread.last_comment is not none %}
                             {{ thread.message_count }} <i class="far fa-comment"></i>
-                            <span class="py-1 px-2 rounded-2 bg-light">{{ thread.last_comment.strftime('%d.%m.%Y %H:%M') }} <i class="far fa-clock"></i></span>
+                            <span class="py-1 px-2 rounded-2 bg-light">{{ thread.last_comment.strftime('%d.%m.%Y %H:%M') }} <i
+                                    class="far fa-clock"></i></span>
                         {% else %}
                             Keskustelussa ei viestejä
                         {% endif %}</div>
@@ -68,23 +71,55 @@
             </div>
             <form action="/boards/{{ board.id }}/threads" method="post">
                 <div class="modal-body">
-                    <div class="mb-3">
+                    <div class="mb-3 position-relative">
                         <label for="exampleFormControlInput1" class="form-label">Aihe</label>
-                        <input type="text" class="form-control" name="name">
+                        <input id="subject-field" type="text" class="form-control" name="name">
+                        <div class="invalid-tooltip">
+                            Aihe ei voi olla tyhjä
+                        </div>
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-3 position-relative">
                         <label for="exampleFormControlTextarea1" class="form-label">Viesti</label>
-                        <textarea class="form-control" name="content" rows="3"></textarea>
+                        <textarea id="message-content-field" class="form-control" name="content" rows="3"></textarea>
+                        <div class="invalid-tooltip">
+                            Viesti ei voi olla tyhjä
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
-                    <button type="submit" class="btn btn-primary">Lähetä</button>
+                    <button id="cancel-button" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta
+                    </button>
+                    <button id="submit-button" type="submit" class="btn btn-primary" disabled>Lähetä</button>
                 </div>
                 <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
             </form>
         </div>
     </div>
 </div>
+<script>
+    var subjectField = document.getElementById("subject-field")
+    var messageContentField = document.getElementById("message-content-field")
+    var submitButton = document.getElementById("submit-button")
+    var cancelButton = document.getElementById("cancel-button")
+    var subjectFieldWasValid = true
+    var subjectFieldTouched = false
+    var messageContentFieldWasValid = true
+    var messageContentFieldTouched = false
+    var formWasValid = false
+    subjectField.addEventListener("input", function () {
+        var subjectFieldValid = subjectField.value.trim() !== ""
+        if (subjectFieldTouched && subjectFieldValid !== subjectFieldWasValid) subjectField.classList.toggle("is-invalid")
+        subjectFieldWasValid = subjectFieldValid
+        submitButton.disabled = !(messageContentFieldTouched && subjectFieldTouched && subjectFieldWasValid && messageContentFieldWasValid)
+        subjectFieldTouched = true
+    })
+    messageContentField.addEventListener("input", function () {
+        var messageContentFieldValid = messageContentField.value.trim() !== ""
+        if (messageContentFieldTouched && messageContentFieldValid !== messageContentFieldWasValid) messageContentField.classList.toggle("is-invalid")
+        messageContentFieldWasValid = messageContentFieldValid
+        submitButton.disabled = !(messageContentFieldTouched && subjectFieldTouched && subjectFieldWasValid && messageContentFieldWasValid)
+        messageContentFieldTouched = true
+    })
+</script>
 </body>
 </html>

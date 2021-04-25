@@ -78,11 +78,14 @@
                 </div>
                 <div id="editing-controls">
                     <form method="post" action="/threads/{{ thread.id }}/name"
-                          class="d-flex flex-row align-items-center">
+                          class="d-flex flex-row align-items-center position-relative">
                         <input id="edit-name-field" name="name" type="text" class="form-control w-75"
                                value="{{ thread.name }}"/>
+                        <div class="invalid-tooltip">
+                            Nimi ei voi olla tyhjä
+                        </div>
                         <div class="w-25 d-flex">
-                            <button type="submit" class="btn btn-success btn-sm ms-2 flex-grow-1">
+                            <button id="edit-name-submit" type="submit" class="btn btn-success btn-sm ms-2 flex-grow-1">
                                 <i class="far fa-edit"></i> Tallenna muutos
                             </button>
                             <button id="cancel-edit-name-btn" class="btn btn-secondary btn-sm ms-2 flex-grow-1"><i
@@ -118,22 +121,26 @@
                              style="white-space: pre-line">{{ message.content }}</div>
                     </div>
                     <div class="editing">
-                        <form method="post" action="/messages/{{ message.id }}/content">
+                        <form method="post" action="/messages/{{ message.id }}/content" class="position-relative">
                             <div class="d-flex justify-content-between">
                                 <div><strong>{{ message.author }}</strong></div>
                                 <div class="text-muted">
-                                    <button class="btn btn-sm btn-link text-success text-decoration-none edit-msg-btn"
+                                    <button id="submit-edit-message-id-{{ message.id }}"
+                                            class="btn btn-sm btn-link text-success text-decoration-none edit-msg-btn"
                                             data-message-id="{{ message.id }}">
                                         <i class="fas fa-check"></i>tallenna
                                     </button>
-
                                     <button class="btn btn-sm btn-link text-decoration-none cancel-edit-btn">
                                         <i class="fas fa-times"></i> peruuta
                                     </button>
                                 </div>
                             </div>
-                            <textarea id="messagearea-id-{{ message.id }}" name="content"
-                                      class="form-control p-3">{{ message.content }}</textarea>
+                            <textarea id="messagearea-id-{{ message.id }}" data-message-id="{{ message.id }}"
+                                      name="content"
+                                      class="form-control p-3 message-edit-field">{{ message.content }}</textarea>
+                            <div class="invalid-tooltip">
+                                Viesti ei voi olla tyhjä
+                            </div>
                             <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                         </form>
                     </div>
@@ -142,12 +149,15 @@
         </div>
         <!-- MESSAGES LIST END -->
         <div>
-            <form action="/threads/{{ thread.id }}" method="POST">
-                <div class="mb-2">
+            <form id="new-message-form" action="/threads/{{ thread.id }}" method="POST">
+                <div class="mb-2 position-relative">
                     <label for="message_field" class="form-label">Kirjoita viesti</label>
-                    <textarea class="form-control" id="message_field" name="content" rows="3"></textarea>
+                    <textarea class="form-control" id="new-message-field" name="content" rows="3"></textarea>
+                    <div class="invalid-tooltip">
+                        Viesti ei voi olla tyhjä
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-success">Lähetä</button>
+                <button id="new-message-submit" type="submit" disabled class="btn btn-success">Lähetä</button>
                 <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
             </form>
         </div>
@@ -205,12 +215,22 @@
 <script>
     var threadControls = document.getElementById("thread-controls")
     var editNameField = document.getElementById("edit-name-field")
+    var editNameSubmit = document.getElementById("edit-name-submit")
+    var wasValid = true
     var handleCancel = function () {
         threadControls.classList.remove("editing")
         threadControls.classList.add("not-editing")
         editNameField.blur()
         editNameField.value = "{{ thread.name }}"
+        wasValid = true
+        editNameField.classList.remove("is-invalid")
     }
+    editNameField.addEventListener("input", function (e) {
+        var isValid = e.target.value.trim() !== ""
+        if (wasValid !== isValid) editNameField.classList.toggle("is-invalid")
+        wasValid = isValid
+        editNameSubmit.disabled = !isValid
+    })
     document.getElementById("edit-name-btn").addEventListener("click", function () {
         threadControls.classList.remove("not-editing")
         threadControls.classList.add("editing")
@@ -220,30 +240,42 @@
         e.preventDefault()
         handleCancel()
     })
-    var deleteMsgForm = document.getElementById("delete-msg-form")
-    var deleteMessageBtns = document.getElementsByClassName("delete-msg-btn")
-    Array.prototype.forEach.call(deleteMessageBtns, function (btn) {
+    var deleteMessageForm = document.getElementById("delete-msg-form")
+    var deleteMessageButtons = document.getElementsByClassName("delete-msg-btn")
+    Array.prototype.forEach.call(deleteMessageButtons, function (btn) {
         btn.addEventListener("click", function (e) {
-            deleteMsgForm.action = "/messages/" + btn.dataset.messageId + "/delete"
+            deleteMessageForm.action = "/messages/" + btn.dataset.messageId + "/delete"
         })
     })
     var editing = null
     var editMessageButtons = document.getElementsByClassName("edit-msg-btn")
     Array.prototype.forEach.call(editMessageButtons, function (btn) {
+        var messageId = btn.dataset.messageId
+        var messageContainer = document.getElementById("message-id-" + messageId)
+        var messageArea = document.getElementById("messagearea-id-" + messageId)
         btn.addEventListener("click", function () {
             if (editing !== null) {
                 editing.classList.add("not-editing")
                 editing.classList.remove("editing")
             }
-            var messageId = btn.dataset.messageId
-            var messageContainer = document.getElementById("message-id-" + messageId)
-            var messageArea = document.getElementById("messagearea-id-" + messageId)
             messageContainer.classList.remove("not-editing")
             messageContainer.classList.add("editing")
             editing = messageContainer
             messageArea.style.height = 0;
-            messageArea.style.height = messageArea.scrollHeight + 20 + 'px';
+            messageArea.style.height = messageArea.scrollHeight + 'px';
             messageArea.focus()
+        })
+    })
+    var editMessageFields = document.getElementsByClassName("message-edit-field")
+    Array.prototype.forEach.call(editMessageFields, function (field) {
+        var messageId = field.dataset.messageId
+        var submitBtn = document.getElementById("submit-edit-message-id-" + messageId)
+        var wasFieldValid = true
+        field.addEventListener("input", function (e) {
+            var isFieldValid = e.target.value.trim() !== ""
+            if (wasFieldValid !== isFieldValid) field.classList.toggle("is-invalid")
+            submitBtn.disabled = !isFieldValid
+            wasFieldValid = isFieldValid
         })
     })
     var cancelEditButtons = document.getElementsByClassName("cancel-edit-btn")
@@ -260,10 +292,18 @@
     Array.prototype.forEach.call(textareas, function (textarea) {
         textarea.oninput = function () {
             textarea.style.height = 0;
-            textarea.style.height = textarea.scrollHeight + 30 + 'px';
+            textarea.style.height = textarea.scrollHeight + 'px';
         }
     })
-
+    var wasNewMessageValid = true
+    var newMessageSubmit = document.getElementById("new-message-submit")
+    var newMessageField = document.getElementById("new-message-field")
+    newMessageField.addEventListener("input", function (e) {
+        var isNewMessageValid = e.target.value.trim() !== ""
+        newMessageSubmit.disabled = !isNewMessageValid
+        if (wasNewMessageValid !== isNewMessageValid) newMessageField.classList.toggle("is-invalid")
+        wasNewMessageValid = isNewMessageValid
+    })
 </script>
 </body>
 </html>

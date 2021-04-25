@@ -7,17 +7,21 @@
 </head>
 <body class="text-center bg-light d-flex h-100 align-items-center">
 <main class="container" style="max-width: 400px">
-    <form action="/register" method="POST">
+    <form action="/register" method="POST"  class="{% if is_invalid %}has-validation is-invalid{% endif %}">
         <h1 class="h3 mb-3 fw-normal">Luo tunnus</h1>
-        <div class="form-floating mb-2">
-            <input type="text" class="form-control" name="username" id="username_field" placeholder="Käyttäjätunnus">
+        <div class="form-floating mb-2 {% if invalid %}is-invalid{% endif %}">
+            <input type="text" class="form-control {% if is_invalid %}is-invalid{% endif %}" name="username" id="username_field" placeholder="Käyttäjätunnus">
             <label for="username_field">Käyttäjätunnus</label>
         </div>
-        <div class="form-floating mb-2">
+        <div class="form-floating mb-2 {% if is_invalid %}is-invalid{% endif %}">
             <input type="password" class="form-control" name="password" id="password_field" placeholder="Salasana">
             <label for="password_field">Salasana</label>
         </div>
-        <button class="w-100 btn btn-lg btn-primary" type="submit">Luo tunnus</button>
+        <div class="invalid-feedback mb-2">
+            {{ error_message }}
+        </div>
+        <button class="w-100 btn btn-lg btn-primary mb-2" type="submit">Luo tunnus</button>
+        <a href="/login">Kirjaudu sisään</a>
         <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     </form>
 </main>

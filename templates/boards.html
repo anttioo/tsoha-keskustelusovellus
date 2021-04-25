@@ -83,11 +83,14 @@
                 <h5 class="modal-title" id="exampleModalLabel">Uusi alue</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="/boards" method="post">
+            <form action="/boards" method="post" class="needs-validation">
                 <div class="modal-body">
-                    <div class="mb-2">
-                        <label for="exampleFormControlInput1" class="form-label">Alueen nimi</label>
-                        <input type="text" class="form-control" name="board_name">
+                    <div class="col position-relative mb-2">
+                        <label for="board_name_field" class="form-label">Alueen nimi</label>
+                        <input type="text" class="form-control" name="board_name" id="new-board-name-field" required>
+                        <div class="invalid-tooltip">
+                            Alueen nimi ei voi olla tyhjä
+                        </div>
                     </div>
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" name="is-secret" id="is-secret-toggle">
@@ -100,8 +103,7 @@
                         {% for user in users %}
                             <div class="form-check mb-2">
                                 <input class="form-check-input" id="secret-board-user-{{ user.id }}"
-                                       value="{{ user.id }}" type="checkbox" name="secret-board-user"
-                                       id="is-secret-toggle">
+                                       value="{{ user.id }}" type="checkbox" name="secret-board-user">
                                 <label class="form-check-label" for="secret-board-user-{{ user.id }}">
                                     {{ user.username }}
                                 </label>
@@ -111,9 +113,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
-                    <button type="submit" class="btn btn-primary">Tallenna</button>
+                    <button id="submit-new-board" type="submit" class="btn btn-primary" disabled>Tallenna</button>
                 </div>
-            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
             </form>
         </div>
     </div>
@@ -148,9 +150,36 @@
     var isSecretToggle = document.getElementById("is-secret-toggle")
     var secretAreaList = document.getElementById("secret-area-list")
     isSecretToggle.addEventListener("change", function (e) {
-        e.preventDefault()
-        if (e.target.checked) secretAreaList.classList.remove("d-none")
-        else secretAreaList.classList.add("d-none")
+        secretAreaList.classList.toggle("d-none")
+        validateNewBoardForm()
+    })
+    var newBoardWasValid = false
+    var newBoardNameFieldTouched = false
+    var newBoardNameField = document.getElementById("new-board-name-field")
+    var submitNewBoardButton = document.getElementById("submit-new-board")
+    var secretAreaListUsers = document.getElementsByName("secret-board-user")
+
+    function validateNewBoardForm() {
+        var boardNameValid = newBoardNameField.value.trim() !== ""
+        var secretAreaValid = function () {
+            if (!isSecretToggle.checked) return true
+            var valid = false
+            Array.prototype.forEach.call(secretAreaListUsers, function (element) {
+                if (element.checked) valid = true
+            })
+            return valid
+        }()
+        if (newBoardNameFieldTouched && newBoardWasValid !== boardNameValid) newBoardNameField.classList.toggle("is-invalid")
+        submitNewBoardButton.disabled = !boardNameValid || !secretAreaValid
+        newBoardWasValid = boardNameValid
+    }
+
+    Array.prototype.forEach.call(secretAreaListUsers, function (element) {
+        element.addEventListener("change", validateNewBoardForm)
+    })
+    newBoardNameField.addEventListener("input", function () {
+        validateNewBoardForm()
+        newBoardNameFieldTouched = true
     })
 </script>
 </body>
