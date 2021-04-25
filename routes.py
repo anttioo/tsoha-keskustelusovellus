@@ -2,10 +2,10 @@ from flask import redirect, render_template, request, session
 from app import app
 from db import db
 from werkzeug.security import check_password_hash, generate_password_hash
-from datetime import datetime
 import users
 import messages
 import boards
+import threads
 
 
 @app.route('/')
@@ -58,8 +58,10 @@ def show_boards():
 
 @app.route('/boards', methods=["POST"])
 def create_board():
-    is_secret = request.form["is-secret"] is not None
-    board_id = boards.create(request.form["board_name"], is_secret, request.form.getlist('secret-board-user'))
+    board_id = boards.create(
+        request.form["board_name"],
+        request.form["is-secret"] is not None,
+        request.form.getlist('secret-board-user'))
     return redirect("/boards/" + str(board_id))
 
 
@@ -76,43 +78,15 @@ def delete_board(board_id):
 
 @app.route('/boards/<int:board_id>/threads', methods=["POST"])
 def create_thread(board_id):
-    name = request.form["name"]
-    content = request.form["content"]
-    now = datetime.now()
-    thread_query = "INSERT INTO threads (name, board_id, created_by) " \
-                   "VALUES (:name, :board_id, :created_by) RETURNING id"
-    result = db.session.execute(thread_query, {
-        "name": name,
-        "board_id": board_id,
-        "created_by": session["uid"]
-    })
-    db.session.commit()
-    thread_id = result.fetchall()[0]["id"]
-    message_query = "INSERT INTO messages (content, thread_id, author_id, created_at) " \
-                    "VALUES (:content, :thread_id, :author_id, :created_at) RETURNING id"
-    db.session.execute(message_query, {
-        "content": content,
-        "thread_id": thread_id,
-        "author_id": session["uid"],
-        "created_at": now
-    })
-    db.session.commit()
+    thread_id = threads.create(request.form["name"], request.form["content"], board_id, session["uid"])
     return redirect("/threads/" + str(thread_id))
 
 
 @app.route('/threads/<int:thread_id>', methods=["GET"])
 def show_thread(thread_id):
-    thread_query = "SELECT id, name, created_by FROM threads t WHERE id = :thread_id"
-    result = db.session.execute(thread_query, {"thread_id": thread_id})
-    thread = result.fetchall()[0]
+    thread = threads.get(thread_id)
     created_by_me = session["uid"] == thread["created_by"]
-    messages_query = "SELECT m.id, m.content, m.created_at, u.username as author " \
-                     "FROM messages m LEFT JOIN users u on m.author_id = u.id " \
-                     "WHERE thread_id = :thread_id " \
-                     "ORDER BY m.created_at ASC "
-    result = db.session.execute(messages_query, {"thread_id": thread_id})
-    comments = result.fetchall()
-    return render_template("thread.html", thread=thread, messages=comments, created_by_me=created_by_me)
+    return render_template("thread.html", thread=thread, created_by_me=created_by_me)
 
 
 @app.route('/threads/<int:thread_id>', methods=["POST"])
@@ -123,24 +97,14 @@ def post_message(thread_id):
 
 @app.route('/threads/<int:thread_id>/name', methods=["POST"])
 def edit_thread_name(thread_id):
-    new_name = request.form["name"]
-    message_query = "UPDATE threads SET name = :new_name WHERE id = :thread_id"
-    db.session.execute(message_query, {
-        "new_name": new_name,
-        "thread_id": thread_id,
-    })
-    db.session.commit()
+    threads.rename(thread_id, request.form["name"])
     return redirect("/threads/" + str(thread_id))
 
 
 @app.route('/threads/<int:thread_id>/delete', methods=["POST"])
 def delete_thread(thread_id):
-    message_query = "DELETE FROM threads WHERE id = :thread_id RETURNING board_id"
-    result = db.session.execute(message_query, {
-        "thread_id": thread_id,
-    })
-    db.session.commit()
-    return redirect("/boards/" + str(result.fetchall()[0]["board_id"]))
+    board_id = threads.delete(thread_id)
+    return redirect("/boards/" + str(board_id))
 
 
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])
