@@ -49,7 +49,7 @@ def do_login():
 def show_boards():
     if "uid" not in session:
         return redirect("/login")
-    return render_template("boards.html", boards=boards.all(), users=users.all())
+    return render_template("boards.html", boards=boards.get_all(), users=users.get_all())
 
 
 @app.route('/boards', methods=["POST"])

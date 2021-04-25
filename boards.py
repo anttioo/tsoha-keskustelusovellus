@@ -1,7 +1,7 @@
 from db import db
 
 
-def all():
+def get_all():
     board_query = "SELECT b.id, b.name, b.is_secret, " \
                   "MAX(m.created_at) as last_comment, " \
                   "COUNT(DISTINCT t.id) as thread_count, " \
