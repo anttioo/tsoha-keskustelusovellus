@@ -10,12 +10,11 @@ Toteutetaan esimerkin mukainen keskustelusovellus, eli toteutettavat ominaisuude
  - [X] Käyttäjä voi etsiä kaikki viestit, joiden osana on annettu sana.
  - [X] Kuka tahansa voi lisätä ja poistaa keskustelualueita.
     - [ ] Vain ylläpitäjä voi lisätä ja poistaa keskustelualueita.
- - [ ] Ylläpitäjä voi luoda salaisen alueen ja määrittää, keillä käyttäjillä on pääsy alueelle.
+ - [X] Ylläpitäjä voi luoda salaisen alueen ja määrittää, keillä käyttäjillä on pääsy alueelle.
  - [ ] Oikeuksen tarkistaminen kaikkialle minne se tarvitaan
  - [ ] Templatet käyttöön fiksummin
- - [ ] Käyttäjätunnuksen lisäksi käyttäjälle nimi, joka näkyy ylävalikossa
  - [ ] Käyttäjille roolit
- - [ ] Refaktoroidaan db jutut ja routet erilleen
+ - [X] Refaktoroidaan db jutut ja routet erilleen
 
 ## Heroku
 ``` http
