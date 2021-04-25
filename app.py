@@ -230,7 +230,7 @@ def search():
                    "LEFT JOIN users u ON m.author_id = u.id " \
                    "LEFT JOIN threads t on t.id = m.thread_id " \
                    "LEFT JOIN boards b on t.board_id = b.id " \
-                   "WHERE content LIKE :search_term GROUP BY m.id"
+                   "WHERE content LIKE :search_term"
     result = db.session.execute(search_query, {"search_term": "%" + search_term + "%"})
     messages = result.fetchall()
     return render_template("search_results.html", search_term=search_term, messages=messages)
