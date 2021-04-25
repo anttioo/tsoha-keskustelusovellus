@@ -66,25 +66,29 @@
         <div class="d-flex flex-row align-items-center border-bottom pb-2">
             <div id="thread-controls" class="not-editing w-100">
                 <div id="not-editing-controls" class="d-flex flex-row align-items-center">
-                    <h5 class="mb-0">{{ thread.name }}</h5>
-                    <button id="edit-name-btn" class="btn btn-primary btn-sm ms-2">
-                        <i class="far fa-edit"></i> Muokaa nimeä
-                    </button>
-                    <button class="btn btn-danger btn-sm ms-2" data-bs-toggle="modal"
-                            data-bs-target="#delete-thread-modal"><i class="far fa-trash-alt"></i> Poista ketju
-                    </button>
+                    <h5 class="mb-0 w-75" style="line-height: 38px">{{ thread.name }}</h5>
+                    <div class="w-25 d-flex">
+                        <button id="edit-name-btn" class="btn btn-primary btn-sm ms-2 flex-grow-1">
+                            <i class="far fa-edit"></i> Muokaa nimeä
+                        </button>
+                        <button class="btn btn-danger btn-sm ms-2 flex-grow-1" data-bs-toggle="modal"
+                                data-bs-target="#delete-thread-modal"><i class="far fa-trash-alt"></i> Poista ketju
+                        </button>
+                    </div>
                 </div>
                 <div id="editing-controls">
                     <form method="post" action="/threads/{{ thread.id }}/name"
                           class="d-flex flex-row align-items-center">
-                        <input id="edit-name-field" name="name" type="text" class="form-control"
+                        <input id="edit-name-field" name="name" type="text" class="form-control w-75"
                                value="{{ thread.name }}"/>
-                        <button type="submit" class="btn btn-success btn-sm ms-2">
-                            <i class="far fa-edit"></i> Tallenna muutos
-                        </button>
-                        <button id="cancel-edit-name-btn" class="btn btn-secondary btn-sm ms-2"><i
-                                class="far fa-trash-alt"></i> Peruuta
-                        </button>
+                        <div class="w-25 d-flex">
+                            <button type="submit" class="btn btn-success btn-sm ms-2 flex-grow-1">
+                                <i class="far fa-edit"></i> Tallenna muutos
+                            </button>
+                            <button id="cancel-edit-name-btn" class="btn btn-secondary btn-sm ms-2 flex-grow-1"><i
+                                    class="far fa-trash-alt"></i> Peruuta
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
