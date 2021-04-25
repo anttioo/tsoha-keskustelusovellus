@@ -1,6 +1,7 @@
 from flask import redirect, render_template, request, session
 from app import app
 from werkzeug.security import check_password_hash, generate_password_hash
+import os
 import users
 import messages
 import boards
@@ -56,7 +57,7 @@ def show_boards():
 def create_board():
     board_id = boards.create(
         request.form["board_name"],
-        request.form["is-secret"] is not None,
+        "is-secret" in request.form,
         request.form.getlist('secret-board-user'))
     return redirect("/boards/" + str(board_id))
 
@@ -106,7 +107,7 @@ def delete_thread(thread_id):
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])
 def delete_message(message_id):
     thread_id = messages.delete(message_id)
-    return redirect("/threads/" + thread_id)
+    return redirect("/threads/" + str(thread_id))
 
 
 @app.route('/messages/<int:message_id>/content', methods=["POST"])
@@ -128,3 +129,12 @@ def logout():
     if "uid" in session:
         del session["uid"]
     return redirect("/login")
+
+
+@app.before_request
+def check_csrf():
+    if "csrf_token" not in session:
+        session["csrf_token"] = os.urandom(16).hex()
+    if request.method == "POST" and ("csrf_token" not in request.form or
+                                     session["csrf_token"] != request.form["csrf_token"]):
+        return "invalid csrf token", 403
