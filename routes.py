@@ -47,7 +47,7 @@ def do_register():
     if result["success"]:
         session["uid"] = result["uid"]
         session["username"] = username
-        session["role"] = result["role"]
+        session["role"] = "user"
         return redirect("/boards")
     else:
         return redirect("/register?invalid=unique")
