@@ -46,3 +46,12 @@ def create(content, thread_id, author_id):
     })
     db.session.commit()
     return result.fetchall()[0]["id"]
+
+
+def get_author_id(message_id):
+    query = "SELECT author_id FROM messages WHERE id = :message_id"
+    result = db.session.execute(query, {"message_id": message_id})
+    try:
+        return result.fetchone()["author_id"]
+    except:
+        return None

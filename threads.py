@@ -22,16 +22,19 @@ def rename(thread_id, new_name):
 
 
 def get(thread_id):
-    thread_query = "SELECT id, name, created_by FROM threads t WHERE id = :thread_id"
+    thread_query = "SELECT t.id, t.name, t.board_id ,t.created_by, b.is_secret " \
+                   "FROM threads t " \
+                   "LEFT JOIN boards b ON b.id = t.board_id " \
+                   "WHERE t.id = :thread_id"
     result = db.session.execute(thread_query, {"thread_id": thread_id})
-    thread = result.fetchall()[0]
-    messages_query = "SELECT m.id, m.content, m.created_at, u.username as author " \
+    thread = result.fetchone()
+    messages_query = "SELECT m.id, m.content, m.created_at, u.id as author_id, u.username as author " \
                      "FROM messages m LEFT JOIN users u on m.author_id = u.id " \
                      "WHERE thread_id = :thread_id " \
                      "ORDER BY m.created_at ASC "
     result = db.session.execute(messages_query, {"thread_id": thread_id})
     messages = result.fetchall()
-    return {"id": thread.id, "name": thread.name, "created_by": thread.created_by, "messages": messages}
+    return {"id": thread.id, "name": thread.name, "created_by": thread.created_by, "is_secret_board": thread["is_secret"], "messages": messages}
 
 
 def create(thread_name, message_content, board_id, created_by):
@@ -55,3 +58,12 @@ def create(thread_name, message_content, board_id, created_by):
     })
     db.session.commit()
     return thread_id
+
+
+def get_author_id(thread_id):
+    query = "SELECT created_by FROM threads WHERE id = :thread_id"
+    result = db.session.execute(query, {"thread_id": thread_id})
+    try:
+        return result.fetchone()["created_by"]
+    except:
+        return None
