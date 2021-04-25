@@ -52,10 +52,14 @@
             {% for board in boards %}
                 <div class="py-3 mb-0 small lh-sm border-bottom d-flex justify-content-between">
                     <div>
-                        <a class="text-decoration-none" href="/boards/{{ board.id }}"><strong
-                                class="text-uppercase">{{ board.name }}</strong></a>
+                        {% if not board.is_secret or board.is_secret and (session.role == "admin" or board.id in user_private_boards) %}
+                            <a class="text-decoration-none" href="/boards/{{ board.id }}"><strong
+                                    class="text-uppercase">{{ board.name }}</strong></a>
+                        {% else %}
+                            <strong class="text-uppercase">{{ board.name }}</strong>
+                        {% endif %}
                         {% if board.is_secret %}
-                            <span class="text-muted fw-bold"><i class="fas fa-user-secret"></i> Salainen</span>
+                            <span class="text-muted fw-bold"><i class="fas fa-user-secret"></i></span>
                         {% endif %}
                     </div>
                     <div>
@@ -67,9 +71,11 @@
                         {% else %}
                             Alueella ei viestejä
                         {% endif %}
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete-board-modal"
-                                class="btn btn-link p-0 delete-board-btn" data-board-id="{{ board.id }}"><i
-                                class="far fa-trash-alt text-danger"></i></button>
+                        {% if session.role == "admin" %}
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#delete-board-modal"
+                                    class="btn btn-link p-0 delete-board-btn" data-board-id="{{ board.id }}"><i
+                                    class="far fa-trash-alt text-danger"></i></button>
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}
@@ -92,7 +98,7 @@
                             Alueen nimi ei voi olla tyhjä
                         </div>
                     </div>
-                    <div class="form-check mb-2">
+                    <div class="form-check mb-2{% if session.role != "admin" %} d-none{% endif %}">
                         <input class="form-check-input" type="checkbox" name="is-secret" id="is-secret-toggle">
                         <label class="form-check-label" for="is-secret-toggle">
                             Salainen alue

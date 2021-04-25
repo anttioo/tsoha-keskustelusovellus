@@ -67,7 +67,7 @@
             <div id="thread-controls" class="not-editing w-100">
                 <div id="not-editing-controls" class="d-flex flex-row align-items-center">
                     <h5 class="mb-0 w-75" style="line-height: 38px">{{ thread.name }}</h5>
-                    <div class="w-25 d-flex">
+                    <div class="w-25 d-flex{% if session.role != "admin" and thread.created_by != session.uid %} invisible{% endif %}">
                         <button id="edit-name-btn" class="btn btn-primary btn-sm ms-2 flex-grow-1">
                             <i class="far fa-edit"></i> Muokaa nimeä
                         </button>
@@ -105,16 +105,18 @@
                     <div class="not-editing">
                         <div class="d-flex justify-content-between">
                             <div><strong>{{ message.author }}</strong></div>
-                            <div class="text-muted">{{ message.created_at.strftime('%d.%m.%Y %H:%M') }}
-                                <button class="btn btn-sm btn-link text-decoration-none edit-msg-btn"
-                                        data-message-id="{{ message.id }}">
-                                    <i class="far fa-edit"></i> muokkaa
-                                </button>
-                                <button class="btn btn-sm btn-link text-danger text-decoration-none delete-msg-btn"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#delete-message-modal" data-message-id="{{ message.id }}">
-                                    <i class="far fa-trash-alt"></i> poista
-                                </button>
+                            <div class="text-muted">
+                                {{ message.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                {% if session.role == "admin" or message.author_id == session.uid %}
+                                    <button class="btn btn-sm btn-link text-decoration-none edit-msg-btn"
+                                            data-message-id="{{ message.id }}">
+                                        <i class="far fa-edit"></i> muokkaa</button>
+                                    <button class="btn btn-sm btn-link text-danger text-decoration-none delete-msg-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#delete-message-modal" data-message-id="{{ message.id }}">
+                                        <i class="far fa-trash-alt"></i> poista
+                                    </button>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="bg-light rounded-2 p-3 border border-1 border-light"
@@ -181,7 +183,9 @@
             <div class="modal-footer">
                 <form method="post" action="/threads/{{ thread.id }}/delete">
                     <button type="submit" class="btn btn-danger" id="delete-thread-accept-btn">Poista ketju</button>
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                 </form>
+
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
             </div>
         </div>
