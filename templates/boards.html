@@ -7,9 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
           integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
           crossorigin="anonymous"/>
-    <script src="/static/slimselect.min.mjs"></script>
-    <link rel="stylesheet" type="text/css"
-          href="/static/slimselect.css">
     <title>Alueet</title>
 </head>
 <body class="bg-light">
@@ -24,7 +21,8 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     <form class="d-flex" action="/search" method="get">
-                        <input class="form-control me-2" type="search" name="term" placeholder="Etsi viesteistä" aria-label="Search">
+                        <input class="form-control me-2" type="search" name="term" placeholder="Etsi viesteistä"
+                               aria-label="Search">
                         <button class="btn btn-outline-success" type="submit">Etsi</button>
                     </form>
                 </li>
@@ -53,8 +51,13 @@
         <div class="d-flex flex-column">
             {% for board in boards %}
                 <div class="py-3 mb-0 small lh-sm border-bottom d-flex justify-content-between">
-                    <div><a class="text-decoration-none" href="/boards/{{ board.id }}"><strong
-                            class="text-uppercase">{{ board.name }}</strong></a></div>
+                    <div>
+                        <a class="text-decoration-none" href="/boards/{{ board.id }}"><strong
+                                class="text-uppercase">{{ board.name }}</strong></a>
+                        {% if board.is_secret %}
+                            <span class="text-muted fw-bold"><i class="fas fa-user-secret"></i> Salainen</span>
+                        {% endif %}
+                    </div>
                     <div>
                         {% if board.last_comment is not none %}
                             {{ board.thread_count }} <i class="far fa-comments"></i>
@@ -82,22 +85,33 @@
             </div>
             <form action="/boards" method="post">
                 <div class="modal-body">
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label for="exampleFormControlInput1" class="form-label">Alueen nimi</label>
                         <input type="text" class="form-control" name="board_name">
                     </div>
-                    <div>
-                        <select id="placeholder">
-                            <option data-placeholder="true"></option>
-                            <option value="value1">Value 1</option>
-                            <option value="value2">Value 2</option>
-                            <option value="value3">Value 3</option>
-                        </select>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="is-secret" id="is-secret-toggle">
+                        <label class="form-check-label" for="is-secret-toggle">
+                            Salainen alue
+                        </label>
+                    </div>
+                    <div id="secret-area-list" class="d-none">
+                        <h6>Valitse käyttäjät</h6>
+                        {% for user in users %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" id="secret-board-user-{{ user.id }}"
+                                       value="{{ user.id }}" type="checkbox" name="secret-board-user"
+                                       id="is-secret-toggle">
+                                <label class="form-check-label" for="secret-board-user-{{ user.id }}">
+                                    {{ user.username }}
+                                </label>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
-                    <button type="submit" class="btn btn-primary">Lähetä</button>
+                    <button type="submit" class="btn btn-primary">Tallenna</button>
                 </div>
             </form>
         </div>
@@ -130,9 +144,12 @@
             }
         })
     })
-    new SlimSelect({
-        select: '#placeholder',
-        placeholder: 'Placeholder Text Here'
+    var isSecretToggle = document.getElementById("is-secret-toggle")
+    var secretAreaList = document.getElementById("secret-area-list")
+    isSecretToggle.addEventListener("change", function (e) {
+        e.preventDefault()
+        if (e.target.checked) secretAreaList.classList.remove("d-none")
+        else secretAreaList.classList.add("d-none")
     })
 </script>
 </body>
