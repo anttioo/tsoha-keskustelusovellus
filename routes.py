@@ -5,6 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 import users
 import messages
+import boards
 
 
 @app.route('/')
@@ -52,58 +53,24 @@ def do_login():
 def show_boards():
     if "uid" not in session:
         return redirect("/login")
-    board_query = "SELECT b.id, b.name, b.is_secret, " \
-                  "MAX(m.created_at) as last_comment, " \
-                  "COUNT(DISTINCT t.id) as thread_count, " \
-                  "COUNT(m.id) as comment_count " \
-                  "FROM boards b " \
-                  "LEFT JOIN threads t ON t.board_id = b.id " \
-                  "LEFT JOIN messages m ON m.thread_id = t.id " \
-                  "GROUP BY b.id"
-    result = db.session.execute(board_query)
-    boards = result.fetchall()
-    users_query = "SELECT id, username FROM users"
-    result = db.session.execute(users_query)
-    users = result.fetchall()
-    return render_template("boards.html", boards=boards, users=users)
+    return render_template("boards.html", boards=boards.all(), users=users.all())
 
 
 @app.route('/boards', methods=["POST"])
 def create_board():
-    name = request.form["board_name"]
     is_secret = request.form["is-secret"] is not None
-    secret_board_users = request.form.getlist('secret-board-user')
-    query = "INSERT INTO boards (name, is_secret) VALUES (:name, :is_secret) RETURNING id"
-    result = db.session.execute(query, {"name": name, "is_secret": is_secret})
-    db.session.commit()
-    board_id = result.fetchall()[0]["id"]
-    if is_secret:
-        private_board_query = "INSERT INTO private_board_users (board_id, user_id) VALUES (:board_id, :user_id)"
-        for user_id in secret_board_users:
-            db.session.execute(private_board_query, {"board_id": board_id, "user_id": user_id})
-        db.session.commit()
+    board_id = boards.create(request.form["board_name"], is_secret, request.form.getlist('secret-board-user'))
     return redirect("/boards/" + str(board_id))
 
 
 @app.route('/boards/<int:board_id>', methods=["GET"])
 def show_board(board_id):
-    board_query = "SELECT id, name, is_secret FROM boards WHERE id = :board_id"
-    result = db.session.execute(board_query, {"board_id": board_id})
-    board = result.fetchall()[0]
-    thread_query = "SELECT t.id, t.name, t.board_id, " \
-                   "MAX(m.created_at) as last_comment, " \
-                   "COUNT(m.id) as message_count " \
-                   "FROM threads t LEFT JOIN messages m ON m.thread_id = t.id WHERE board_id = :board_id GROUP BY t.id "
-    result = db.session.execute(thread_query, {"board_id": board_id})
-    threads = result.fetchall()
-    return render_template("board.html", board=board, threads=threads)
+    return render_template("board.html", board=boards.get(board_id))
 
 
 @app.route('/boards/<int:board_id>/delete', methods=["GET"])
 def delete_board(board_id):
-    board_query = "DELETE FROM boards WHERE id = :board_id"
-    db.session.execute(board_query, {"board_id": board_id})
-    db.session.commit()
+    boards.delete(board_id)
     return redirect("/boards")
 
 
