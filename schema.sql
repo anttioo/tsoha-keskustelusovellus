@@ -1,7 +1,7 @@
 create table boards (
     id        serial               not null primary key,
     name      text                 not null,
-    is_public boolean default true not null
+    is_secret boolean default false not null
 );
 
 create unique index boards_name_uindex on boards (name);
@@ -9,7 +9,8 @@ create unique index boards_name_uindex on boards (name);
 create table users (
     id       serial not null primary key,
     username text   not null,
-    password text   not null
+    password text   not null,
+    role     text default 'user'::text not null
 );
 
 create unique index users_username_uindex on users (username);
@@ -26,7 +27,7 @@ create table messages (
     content    text,
     created_at timestamp,
     thread_id  integer references threads on update cascade on delete cascade,
-    author_id  integer not null
+    author_id  integer references users not null
 );
 
 create table private_board_users (
@@ -35,6 +36,12 @@ create table private_board_users (
     user_id  integer not null references users on update cascade on delete cascade
 );
 
+create table private_board_users
+(
+    id       serial  not null  primary key,
+    board_id integer not null references boards on update cascade on delete cascade,
+    user_id  integer not null references users on update cascade on delete cascade
+);
 
 
 
