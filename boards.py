@@ -24,6 +24,7 @@ def create(board_name, is_secret, secret_board_users):
         for user_id in secret_board_users:
             db.session.execute(private_board_query, {"board_id": board_id, "user_id": user_id})
         db.session.commit()
+    return board_id
 
 
 def get(board_id):
