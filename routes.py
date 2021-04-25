@@ -1,6 +1,5 @@
 from flask import redirect, render_template, request, session
 from app import app
-from db import db
 from werkzeug.security import check_password_hash, generate_password_hash
 import users
 import messages
@@ -36,12 +35,9 @@ def index():
 @app.route('/login', methods=["POST"])
 def do_login():
     username = request.form["username"]
-    password = request.form["password"]
-    query = "SELECT id, password FROM users WHERE username = :username"
-    result = db.session.execute(query, {"username": username}).fetchall()[0]
-    uid = result.id
-    pw_hash = result.password
-    if check_password_hash(pw_hash, password):
+    user = users.get_by_username(username)
+    if user is not None and check_password_hash(user.password, request.form["password"]):
+        uid = user.id
         session["uid"] = uid
         session["username"] = username
         return redirect("/boards")
