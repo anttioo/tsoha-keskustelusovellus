@@ -89,6 +89,7 @@
                                     class="far fa-trash-alt"></i> Peruuta
                             </button>
                         </div>
+                        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                     </form>
                 </div>
             </div>
@@ -133,6 +134,7 @@
                             </div>
                             <textarea id="messagearea-id-{{ message.id }}" name="content"
                                       class="form-control p-3">{{ message.content }}</textarea>
+                            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                         </form>
                     </div>
                 </div>
@@ -146,6 +148,7 @@
                     <textarea class="form-control" id="message_field" name="content" rows="3"></textarea>
                 </div>
                 <button type="submit" class="btn btn-success">Lähetä</button>
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
             </form>
         </div>
     </div>
@@ -192,6 +195,7 @@
             <div class="modal-footer">
                 <form method="post" id="delete-msg-form">
                     <button type="submit" class="btn btn-danger" id="delete-thread-confirm-btn">Poista Viesti</button>
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                 </form>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
             </div>

@@ -113,6 +113,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
                     <button type="submit" class="btn btn-primary">Tallenna</button>
                 </div>
+            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
             </form>
         </div>
     </div>
