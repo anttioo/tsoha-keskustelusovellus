@@ -96,7 +96,7 @@
         <!-- THREAD CONTROLS END -->
         <!-- MESSAGES LIST START -->
         <div class="d-flex flex-column my-2 ">
-            {% for message in messages %}
+            {% for message in thread.messages %}
                 <div id="message-id-{{ message.id }}" class="message not-editing mb-2">
                     <div class="not-editing">
                         <div class="d-flex justify-content-between">
