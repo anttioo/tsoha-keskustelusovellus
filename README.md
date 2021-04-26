@@ -1,5 +1,9 @@
 # tsoha-keskustelusovellus
 
+Admin tunnukset: 
+   -  Käyttäjätunnus: admin
+   -  Salasana: admin 
+
 oikeuksien tarkistus puuttuu vielä joistain paikoista
 
 Toteutetaan esimerkin mukainen keskustelusovellus, eli toteutettavat ominaisuudet ovat:
