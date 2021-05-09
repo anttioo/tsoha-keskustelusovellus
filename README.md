@@ -7,8 +7,6 @@ Admin tunnukset:
    -  Käyttäjätunnus: admin
    -  Salasana: admin 
 
-oikeuksien tarkistus puuttuu vielä joistain paikoista
-
 Toteutetaan esimerkin mukainen keskustelusovellus, eli toteutettavat ominaisuudet ovat:
  - [X] Käyttäjä voi kirjautua sisään ja ulos sekä luoda uuden tunnuksen.
  - [X] Käyttäjä näkee sovelluksen etusivulla listan alueista sekä jokaisen alueen ketjujen ja viestien määrän ja viimeksi lähetetyn viestin ajankohdan.
