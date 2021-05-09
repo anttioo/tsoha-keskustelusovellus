@@ -103,6 +103,8 @@ def show_board(board_id):
     if not is_logged_in():
         return redirect("/login")
     board = boards.get(board_id)
+    if board is None:
+        return render_template("board_404.html"), 404
     if board["is_secret"] and board["id"] not in users.get_private_boards(user_id()):
         return redirect("/boards")
     return render_template("board.html", board=board)
@@ -129,6 +131,8 @@ def show_thread(thread_id):
     if not is_logged_in():
         return redirect("/login")
     thread = threads.get(thread_id)
+    if thread is None:
+        return render_template("thread_404.html"), 404
     if not is_admin() and thread["is_secret_board"] and thread["board_id"] not in users.get_private_boards(user_id()):
         return redirect("/boards")
     created_by_me = session["uid"] == thread["created_by"]

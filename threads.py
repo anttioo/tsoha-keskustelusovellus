@@ -28,6 +28,8 @@ def get(thread_id):
                    "WHERE t.id = :thread_id"
     result = db.session.execute(thread_query, {"thread_id": thread_id})
     thread = result.fetchone()
+    if thread is None:
+        return None
     messages_query = "SELECT m.id, m.content, m.created_at, u.id as author_id, u.username as author " \
                      "FROM messages m LEFT JOIN users u on m.author_id = u.id " \
                      "WHERE thread_id = :thread_id " \

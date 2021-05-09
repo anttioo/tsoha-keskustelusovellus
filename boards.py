@@ -30,7 +30,9 @@ def create(board_name, is_secret, secret_board_users):
 def get(board_id):
     board_query = "SELECT id, name, is_secret FROM boards WHERE id = :board_id"
     result = db.session.execute(board_query, {"board_id": board_id})
-    board = result.fetchall()[0]
+    board = result.fetchone()
+    if board is None:
+        return None
     thread_query = "SELECT t.id, t.name, t.board_id, " \
                    "MAX(m.created_at) as last_comment, " \
                    "COUNT(m.id) as message_count " \
