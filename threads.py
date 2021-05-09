@@ -39,7 +39,14 @@ def get(thread_id):
                      "ORDER BY m.created_at ASC "
     result = db.session.execute(messages_query, {"thread_id": thread_id})
     messages = result.fetchall()
-    return {"id": thread.id, "name": thread.name, "created_by": thread.created_by, "is_secret_board": thread["is_secret"], "messages": messages}
+    return {
+        "id": thread.id,
+        "board_id": thread["board_id"],
+        "name": thread.name,
+        "created_by": thread.created_by,
+        "is_secret_board": thread["is_secret"],
+        "messages": messages
+    }
 
 
 def create(thread_name, message_content, board_id, created_by):
