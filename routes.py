@@ -91,10 +91,14 @@ def show_boards():
 def create_board():
     if not is_logged_in():
         redirect("/boards")
+    is_secret = "is-secret" in request.form
+    secret_board_users = request.form.getlist('secret-board-user')
+    if is_secret and len(secret_board_users) == 0:
+        return redirect("/boards")
     board_id = boards.create(
         request.form["board_name"],
-        "is-secret" in request.form and is_admin(),
-        request.form.getlist('secret-board-user'))
+        is_secret and is_admin(),
+        secret_board_users)
     return redirect("/boards/" + str(board_id))
 
 
