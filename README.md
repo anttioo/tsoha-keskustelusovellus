@@ -1,5 +1,8 @@
 # tsoha-keskustelusovellus
 
+Sovellus löytyy täältä: [tsoha-keskustelusovellus-ao](https://tsoha-keskustelusovellus-ao.herokuapp.com)
+
+
 Admin tunnukset: 
    -  Käyttäjätunnus: admin
    -  Salasana: admin 
@@ -16,10 +19,11 @@ Toteutetaan esimerkin mukainen keskustelusovellus, eli toteutettavat ominaisuude
  - [X] Käyttäjä voi etsiä kaikki viestit, joiden osana on annettu sana.
  - [X] Kuka tahansa voi lisätä keskustelualueita
  - [X] Ylläpitäjä voi luoda salaisen alueen ja määrittää, keillä käyttäjillä on pääsy alueelle.
- - [ ] Oikeuksen tarkistaminen kaikkialle minne se tarvitaan
- - [ ] Templatet käyttöön fiksummin
+ - [x] Oikeuksen tarkistaminen kaikkialle minne se tarvitaan
+ - [X] Templatet käyttöön fiksummin
  - [X] Käyttäjille roolit
  - [X] Refaktoroidaan db jutut ja routet erilleen
+
 
 ## Heroku
 ``` http
