@@ -198,7 +198,11 @@ def search():
     if not is_logged_in():
         return redirect("/login")
     search_term = request.args.get("term")
-    return render_template("search_results.html", search_term=search_term, messages=messages.search(search_term))
+    return render_template(
+        "search_results.html",
+        search_term=search_term,
+        messages=messages.search(search_term, user_id())
+    )
 
 
 @app.route("/logout")

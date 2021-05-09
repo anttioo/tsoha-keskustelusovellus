@@ -2,16 +2,19 @@ from db import db
 from datetime import datetime
 
 
-def search(search_term):
+def search(search_term, uid):
     search_query = "SELECT m.id as message_id, m.content as content, m.created_at as created_at, " \
                    "t.id as thread_id, t.name as thread_name, b.name as board_name, b.id as board_id, " \
-                   "u.username as author " \
+                   "u.username as author, " \
+                    "pbu.user_id as pbu_user " \
                    "FROM messages m " \
                    "LEFT JOIN users u ON m.author_id = u.id " \
                    "LEFT JOIN threads t on t.id = m.thread_id " \
                    "LEFT JOIN boards b on t.board_id = b.id " \
+                   "LEFT JOIN private_board_users pbu ON pbu.board_id = b.id " \
+                   "AND (pbu.user_id IS NULL OR pbu.user_id = :uid) " \
                    "WHERE content LIKE :search_term"
-    result = db.session.execute(search_query, {"search_term": "%" + search_term + "%"})
+    result = db.session.execute(search_query, {"search_term": "%" + search_term + "%", "uid": uid})
     return result.fetchall()
 
 
