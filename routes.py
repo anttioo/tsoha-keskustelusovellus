@@ -120,9 +120,13 @@ def delete_board(board_id):
 
 @app.route('/boards/<int:board_id>/threads', methods=["POST"])
 def create_thread(board_id):
+    name = request.form["name"]
+    content = request.form["content"]
     if not is_logged_in():
         return redirect("/login")
-    thread_id = threads.create(request.form["name"], request.form["content"], board_id, session["uid"])
+    if name == "" or content == "":
+        redirect("/boards/" + str(board_id))
+    thread_id = threads.create(name, content, board_id, session["uid"])
     return redirect("/threads/" + str(thread_id))
 
 
@@ -141,17 +145,21 @@ def show_thread(thread_id):
 
 @app.route('/threads/<int:thread_id>', methods=["POST"])
 def post_message(thread_id):
+    content = request.form["content"]
     if not is_logged_in():
         return redirect("/login")
-    messages.create(request.form["content"], thread_id, session["uid"])
+    if content != "":
+        messages.create(content, thread_id, session["uid"])
     return redirect("/threads/" + str(thread_id))
 
 
 @app.route('/threads/<int:thread_id>/name', methods=["POST"])
 def edit_thread_name(thread_id):
+    new_name = request.form["name"]
     if not is_admin() and threads.get_author_id(thread_id) is not user_id():
         return redirect("/boards/")
-    threads.rename(thread_id, request.form["name"])
+    if new_name != "":
+        threads.rename(thread_id, new_name)
     return redirect("/threads/" + str(thread_id))
 
 
@@ -160,6 +168,8 @@ def delete_thread(thread_id):
     if not is_admin() and threads.get_author_id(thread_id) is not user_id():
         return redirect("/boards/")
     board_id = threads.delete(thread_id)
+    if board_id is None:
+        return render_template("thread_404.html"), 404
     return redirect("/boards/" + str(board_id))
 
 
@@ -168,6 +178,8 @@ def delete_message(message_id):
     if not is_admin() and messages.get_author_id(message_id) is not user_id():
         return redirect("/boards/")
     thread_id = messages.delete(message_id)
+    if thread_id is None:
+        return render_template("thread_404.html"), 404
     return redirect("/threads/" + str(thread_id))
 
 
@@ -176,6 +188,8 @@ def update_message(message_id):
     if not is_admin() and messages.get_author_id(message_id) is not user_id():
         return redirect("/boards/")
     thread_id = messages.update(message_id, request.form["content"])
+    if thread_id is None:
+        return render_template("message_404.html"), 404
     return redirect("/threads/" + str(thread_id))
 
 

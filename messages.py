@@ -22,7 +22,10 @@ def update(message_id, new_content):
         "new_content": new_content
     })
     db.session.commit()
-    return result.fetchall()[0]["thread_id"]
+    row = result.fetchone()
+    if row is None:
+        return None
+    return row["thread_id"]
 
 
 def delete(message_id):
@@ -31,7 +34,10 @@ def delete(message_id):
         "message_id": message_id,
     })
     db.session.commit()
-    return result.fetchall()[0]["thread_id"]
+    row = result.fetchone()
+    if row is None:
+        return None
+    return row["thread_id"]
 
 
 def create(content, thread_id, author_id):

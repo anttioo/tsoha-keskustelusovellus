@@ -8,7 +8,10 @@ def delete(thread_id):
         "thread_id": thread_id,
     })
     db.session.commit()
-    return result.fetchall()[0]["board_id"]
+    row = result.fetchaone()
+    if row is None:
+        return None
+    return row["board_id"]
 
 
 def rename(thread_id, new_name):
