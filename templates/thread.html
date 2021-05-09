@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/styles.css">
-    <script type="application/javascript" src="/static/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-          integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
-          crossorigin="anonymous"/>
-    <title>Viestit: {{ thread.name }}</title>
+{% extends "layout.html" %}
+{% block title %}Viestit: {{ thread.name }}{% endblock %}
+{% block styles %}
     <style type="text/css">
         #thread-controls.not-editing > #editing-controls {
             display: none;
@@ -33,281 +26,261 @@
             visibility: hidden;
         }
     </style>
-</head>
-<body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/boards">Keskustelusovellus</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            </ul>
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <!-- OIKEA NAV -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ session.username }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="/logout">Kirjaudu ulos</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<main class="container">
-    <div class="my-3 p-3 bg-body rounded shadow-sm">
-        <!-- THREAD CONTROLS START -->
-        <div class="d-flex flex-row align-items-center border-bottom pb-2">
-            <div id="thread-controls" class="not-editing w-100">
-                <div id="not-editing-controls" class="d-flex flex-row align-items-center">
-                    <h5 class="mb-0 w-75" style="line-height: 38px">{{ thread.name }}</h5>
-                    <div class="w-25 d-flex{% if session.role != "admin" and thread.created_by != session.uid %} invisible{% endif %}">
-                        <button id="edit-name-btn" class="btn btn-primary btn-sm ms-2 flex-grow-1">
-                            <i class="far fa-edit"></i> Muokaa nimeä
-                        </button>
-                        <button class="btn btn-danger btn-sm ms-2 flex-grow-1" data-bs-toggle="modal"
-                                data-bs-target="#delete-thread-modal"><i class="far fa-trash-alt"></i> Poista ketju
-                        </button>
-                    </div>
-                </div>
-                <div id="editing-controls">
-                    <form method="post" action="/threads/{{ thread.id }}/name"
-                          class="d-flex flex-row align-items-center position-relative">
-                        <input id="edit-name-field" name="name" type="text" class="form-control w-75"
-                               value="{{ thread.name }}"/>
-                        <div class="invalid-tooltip">
-                            Nimi ei voi olla tyhjä
-                        </div>
-                        <div class="w-25 d-flex">
-                            <button id="edit-name-submit" type="submit" class="btn btn-success btn-sm ms-2 flex-grow-1">
-                                <i class="far fa-edit"></i> Tallenna muutos
+{% endblock %}
+{% block content %}
+    <main class="container">
+        <div class="my-3 p-3 bg-body rounded shadow-sm">
+            <!-- THREAD CONTROLS START -->
+            <div class="d-flex flex-row align-items-center border-bottom pb-2">
+                <div id="thread-controls" class="not-editing w-100">
+                    <div id="not-editing-controls" class="d-flex flex-row align-items-center">
+                        <h5 class="mb-0 w-75" style="line-height: 38px">{{ thread.name }}</h5>
+                        <div class="w-25 d-flex{% if session.role != "admin" and thread.created_by != session.uid %} invisible{% endif %}">
+                            <button id="edit-name-btn" class="btn btn-primary btn-sm ms-2 flex-grow-1">
+                                <i class="far fa-edit"></i> Muokaa nimeä
                             </button>
-                            <button id="cancel-edit-name-btn" class="btn btn-secondary btn-sm ms-2 flex-grow-1"><i
-                                    class="far fa-trash-alt"></i> Peruuta
+                            <button class="btn btn-danger btn-sm ms-2 flex-grow-1" data-bs-toggle="modal"
+                                    data-bs-target="#delete-thread-modal"><i class="far fa-trash-alt"></i> Poista ketju
                             </button>
                         </div>
-                        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-                    </form>
-                </div>
-            </div>
-        </div>
-        <!-- THREAD CONTROLS END -->
-        <!-- MESSAGES LIST START -->
-        <div class="d-flex flex-column my-2 ">
-            {% for message in thread.messages %}
-                <div id="message-id-{{ message.id }}" class="message not-editing mb-2">
-                    <div class="not-editing">
-                        <div class="d-flex justify-content-between">
-                            <div><strong>{{ message.author }}</strong></div>
-                            <div class="text-muted">
-                                {{ message.created_at.strftime('%d.%m.%Y %H:%M') }}
-                                {% if session.role == "admin" or message.author_id == session.uid %}
-                                    <button class="btn btn-sm btn-link text-decoration-none edit-msg-btn"
-                                            data-message-id="{{ message.id }}">
-                                        <i class="far fa-edit"></i> muokkaa</button>
-                                    <button class="btn btn-sm btn-link text-danger text-decoration-none delete-msg-btn"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#delete-message-modal" data-message-id="{{ message.id }}">
-                                        <i class="far fa-trash-alt"></i> poista
-                                    </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="bg-light rounded-2 p-3 border border-1 border-light"
-                             style="white-space: pre-line">{{ message.content }}</div>
                     </div>
-                    <div class="editing">
-                        <form method="post" action="/messages/{{ message.id }}/content" class="position-relative">
-                            <div class="d-flex justify-content-between">
-                                <div><strong>{{ message.author }}</strong></div>
-                                <div class="text-muted">
-                                    <button id="submit-edit-message-id-{{ message.id }}"
-                                            class="btn btn-sm btn-link text-success text-decoration-none edit-msg-btn"
-                                            data-message-id="{{ message.id }}">
-                                        <i class="fas fa-check"></i>tallenna
-                                    </button>
-                                    <button class="btn btn-sm btn-link text-decoration-none cancel-edit-btn">
-                                        <i class="fas fa-times"></i> peruuta
-                                    </button>
-                                </div>
-                            </div>
-                            <textarea id="messagearea-id-{{ message.id }}" data-message-id="{{ message.id }}"
-                                      name="content"
-                                      class="form-control p-3 message-edit-field">{{ message.content }}</textarea>
+                    <div id="editing-controls">
+                        <form method="post" action="/threads/{{ thread.id }}/name"
+                              class="d-flex flex-row align-items-center position-relative">
+                            <input id="edit-name-field" name="name" type="text" class="form-control w-75"
+                                   value="{{ thread.name }}"/>
                             <div class="invalid-tooltip">
-                                Viesti ei voi olla tyhjä
+                                Nimi ei voi olla tyhjä
+                            </div>
+                            <div class="w-25 d-flex">
+                                <button id="edit-name-submit" type="submit"
+                                        class="btn btn-success btn-sm ms-2 flex-grow-1">
+                                    <i class="far fa-edit"></i> Tallenna muutos
+                                </button>
+                                <button id="cancel-edit-name-btn" class="btn btn-secondary btn-sm ms-2 flex-grow-1"><i
+                                        class="far fa-trash-alt"></i> Peruuta
+                                </button>
                             </div>
                             <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                         </form>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-        <!-- MESSAGES LIST END -->
-        <div>
-            <form id="new-message-form" action="/threads/{{ thread.id }}" method="POST">
-                <div class="mb-2 position-relative">
-                    <label for="message_field" class="form-label">Kirjoita viesti</label>
-                    <textarea class="form-control" id="new-message-field" name="content" rows="3"></textarea>
-                    <div class="invalid-tooltip">
-                        Viesti ei voi olla tyhjä
+            </div>
+            <!-- THREAD CONTROLS END -->
+            <!-- MESSAGES LIST START -->
+            <div class="d-flex flex-column my-2 ">
+                {% for message in thread.messages %}
+                    <div id="message-id-{{ message.id }}" class="message not-editing mb-2">
+                        <div class="not-editing">
+                            <div class="d-flex justify-content-between">
+                                <div><strong>{{ message.author }}</strong></div>
+                                <div class="text-muted">
+                                    {{ message.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                    {% if session.role == "admin" or message.author_id == session.uid %}
+                                        <button class="btn btn-sm btn-link text-decoration-none edit-msg-btn"
+                                                data-message-id="{{ message.id }}">
+                                            <i class="far fa-edit"></i> muokkaa
+                                        </button>
+                                        <button class="btn btn-sm btn-link text-danger text-decoration-none delete-msg-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#delete-message-modal"
+                                                data-message-id="{{ message.id }}">
+                                            <i class="far fa-trash-alt"></i> poista
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="bg-light rounded-2 p-3 border border-1 border-light"
+                                 style="white-space: pre-line">{{ message.content }}</div>
+                        </div>
+                        <div class="editing">
+                            <form method="post" action="/messages/{{ message.id }}/content" class="position-relative">
+                                <div class="d-flex justify-content-between">
+                                    <div><strong>{{ message.author }}</strong></div>
+                                    <div class="text-muted">
+                                        <button id="submit-edit-message-id-{{ message.id }}"
+                                                class="btn btn-sm btn-link text-success text-decoration-none edit-msg-btn"
+                                                data-message-id="{{ message.id }}">
+                                            <i class="fas fa-check"></i>tallenna
+                                        </button>
+                                        <button class="btn btn-sm btn-link text-decoration-none cancel-edit-btn">
+                                            <i class="fas fa-times"></i> peruuta
+                                        </button>
+                                    </div>
+                                </div>
+                                <textarea id="messagearea-id-{{ message.id }}" data-message-id="{{ message.id }}"
+                                          name="content"
+                                          class="form-control p-3 message-edit-field">{{ message.content }}</textarea>
+                                <div class="invalid-tooltip">
+                                    Viesti ei voi olla tyhjä
+                                </div>
+                                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                            </form>
+                        </div>
                     </div>
+                {% endfor %}
+            </div>
+            <!-- MESSAGES LIST END -->
+            <div>
+                <form id="new-message-form" action="/threads/{{ thread.id }}" method="POST">
+                    <div class="mb-2 position-relative">
+                        <label for="message_field" class="form-label">Kirjoita viesti</label>
+                        <textarea class="form-control" id="new-message-field" name="content" rows="3"></textarea>
+                        <div class="invalid-tooltip">
+                            Viesti ei voi olla tyhjä
+                        </div>
+                    </div>
+                    <button id="new-message-submit" type="submit" disabled class="btn btn-success">Lähetä</button>
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- DELETE THREAD MODAL -->
+    <div class="modal fade" id="delete-thread-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Poista ketju</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <button id="new-message-submit" type="submit" disabled class="btn btn-success">Lähetä</button>
-                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-            </form>
-        </div>
-    </div>
-</main>
+                <div class="modal-body">
+                    <p>
+                        Haluatko varmasti poistaa ketjun:<br>
+                        <strong>{{ thread.name }}?</strong>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" action="/threads/{{ thread.id }}/delete">
+                        <button type="submit" class="btn btn-danger" id="delete-thread-accept-btn">Poista ketju</button>
+                        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                    </form>
 
-<!-- DELETE THREAD MODAL -->
-<div class="modal fade" id="delete-thread-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Poista ketju</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>
-                    Haluatko varmasti poistaa ketjun:<br>
-                    <strong>{{ thread.name }}?</strong>
-                </p>
-            </div>
-            <div class="modal-footer">
-                <form method="post" action="/threads/{{ thread.id }}/delete">
-                    <button type="submit" class="btn btn-danger" id="delete-thread-accept-btn">Poista ketju</button>
-                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-                </form>
-
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- DELETE MESSAGE MODAL -->
-<div class="modal fade" id="delete-message-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Poista Viesti</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>
-                    Haluatko varmasti poistaa viestin?<br>
-                    <span id="delete-message-content"></span>
-                </p>
-            </div>
-            <div class="modal-footer">
-                <form method="post" id="delete-msg-form">
-                    <button type="submit" class="btn btn-danger" id="delete-thread-confirm-btn">Poista Viesti</button>
-                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-                </form>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
+    <!-- DELETE MESSAGE MODAL -->
+    <div class="modal fade" id="delete-message-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Poista Viesti</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Haluatko varmasti poistaa viestin?<br>
+                        <span id="delete-message-content"></span>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" id="delete-msg-form">
+                        <button type="submit" class="btn btn-danger" id="delete-thread-confirm-btn">Poista Viesti
+                        </button>
+                        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                    </form>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<script>
-    var threadControls = document.getElementById("thread-controls")
-    var editNameField = document.getElementById("edit-name-field")
-    var editNameSubmit = document.getElementById("edit-name-submit")
-    var wasValid = true
-    var handleCancel = function () {
-        threadControls.classList.remove("editing")
-        threadControls.classList.add("not-editing")
-        editNameField.blur()
-        editNameField.value = "{{ thread.name }}"
-        wasValid = true
-        editNameField.classList.remove("is-invalid")
-    }
-    editNameField.addEventListener("input", function (e) {
-        var isValid = e.target.value.trim() !== ""
-        if (wasValid !== isValid) editNameField.classList.toggle("is-invalid")
-        wasValid = isValid
-        editNameSubmit.disabled = !isValid
-    })
-    document.getElementById("edit-name-btn").addEventListener("click", function () {
-        threadControls.classList.remove("not-editing")
-        threadControls.classList.add("editing")
-        editNameField.focus()
-    })
-    document.getElementById("cancel-edit-name-btn").addEventListener("click", function (e) {
-        e.preventDefault()
-        handleCancel()
-    })
-    var deleteMessageForm = document.getElementById("delete-msg-form")
-    var deleteMessageButtons = document.getElementsByClassName("delete-msg-btn")
-    Array.prototype.forEach.call(deleteMessageButtons, function (btn) {
-        btn.addEventListener("click", function (e) {
-            deleteMessageForm.action = "/messages/" + btn.dataset.messageId + "/delete"
-        })
-    })
-    var editing = null
-    var editMessageButtons = document.getElementsByClassName("edit-msg-btn")
-    Array.prototype.forEach.call(editMessageButtons, function (btn) {
-        var messageId = btn.dataset.messageId
-        var messageContainer = document.getElementById("message-id-" + messageId)
-        var messageArea = document.getElementById("messagearea-id-" + messageId)
-        btn.addEventListener("click", function () {
-            if (editing !== null) {
-                editing.classList.add("not-editing")
-                editing.classList.remove("editing")
-            }
-            messageContainer.classList.remove("not-editing")
-            messageContainer.classList.add("editing")
-            editing = messageContainer
-            messageArea.style.height = 0;
-            messageArea.style.height = messageArea.scrollHeight + 'px';
-            messageArea.focus()
-        })
-    })
-    var editMessageFields = document.getElementsByClassName("message-edit-field")
-    Array.prototype.forEach.call(editMessageFields, function (field) {
-        var messageId = field.dataset.messageId
-        var submitBtn = document.getElementById("submit-edit-message-id-" + messageId)
-        var wasFieldValid = true
-        field.addEventListener("input", function (e) {
-            var isFieldValid = e.target.value.trim() !== ""
-            if (wasFieldValid !== isFieldValid) field.classList.toggle("is-invalid")
-            submitBtn.disabled = !isFieldValid
-            wasFieldValid = isFieldValid
-        })
-    })
-    var cancelEditButtons = document.getElementsByClassName("cancel-edit-btn")
-    Array.prototype.forEach.call(cancelEditButtons, function (btn) {
-        btn.addEventListener("click", function (e) {
-            e.preventDefault()
-            if (editing !== null) {
-                editing.classList.add("not-editing")
-                editing.classList.remove("editing")
-            }
-        })
-    })
-    var textareas = document.querySelectorAll('textarea');
-    Array.prototype.forEach.call(textareas, function (textarea) {
-        textarea.oninput = function () {
-            textarea.style.height = 0;
-            textarea.style.height = textarea.scrollHeight + 'px';
+    <script>
+        var threadControls = document.getElementById("thread-controls")
+        var editNameField = document.getElementById("edit-name-field")
+        var editNameSubmit = document.getElementById("edit-name-submit")
+        var wasValid = true
+        var handleCancel = function () {
+            threadControls.classList.remove("editing")
+            threadControls.classList.add("not-editing")
+            editNameField.blur()
+            editNameField.value = "{{ thread.name }}"
+            wasValid = true
+            editNameField.classList.remove("is-invalid")
         }
-    })
-    var wasNewMessageValid = true
-    var newMessageSubmit = document.getElementById("new-message-submit")
-    var newMessageField = document.getElementById("new-message-field")
-    newMessageField.addEventListener("input", function (e) {
-        var isNewMessageValid = e.target.value.trim() !== ""
-        newMessageSubmit.disabled = !isNewMessageValid
-        if (wasNewMessageValid !== isNewMessageValid) newMessageField.classList.toggle("is-invalid")
-        wasNewMessageValid = isNewMessageValid
-    })
-</script>
-</body>
-</html>
+        editNameField.addEventListener("input", function (e) {
+            var isValid = e.target.value.trim() !== ""
+            if (wasValid !== isValid) editNameField.classList.toggle("is-invalid")
+            wasValid = isValid
+            editNameSubmit.disabled = !isValid
+        })
+        document.getElementById("edit-name-btn").addEventListener("click", function () {
+            threadControls.classList.remove("not-editing")
+            threadControls.classList.add("editing")
+            editNameField.focus()
+        })
+        document.getElementById("cancel-edit-name-btn").addEventListener("click", function (e) {
+            e.preventDefault()
+            handleCancel()
+        })
+        var deleteMessageForm = document.getElementById("delete-msg-form")
+        var deleteMessageButtons = document.getElementsByClassName("delete-msg-btn")
+        Array.prototype.forEach.call(deleteMessageButtons, function (btn) {
+            btn.addEventListener("click", function (e) {
+                deleteMessageForm.action = "/messages/" + btn.dataset.messageId + "/delete"
+            })
+        })
+        var editing = null
+        var editMessageButtons = document.getElementsByClassName("edit-msg-btn")
+        Array.prototype.forEach.call(editMessageButtons, function (btn) {
+            var messageId = btn.dataset.messageId
+            var messageContainer = document.getElementById("message-id-" + messageId)
+            var messageArea = document.getElementById("messagearea-id-" + messageId)
+            btn.addEventListener("click", function () {
+                if (editing !== null) {
+                    editing.classList.add("not-editing")
+                    editing.classList.remove("editing")
+                }
+                messageContainer.classList.remove("not-editing")
+                messageContainer.classList.add("editing")
+                editing = messageContainer
+                messageArea.style.height = 0;
+                messageArea.style.height = messageArea.scrollHeight + 'px';
+                messageArea.focus()
+            })
+        })
+        var editMessageFields = document.getElementsByClassName("message-edit-field")
+        Array.prototype.forEach.call(editMessageFields, function (field) {
+            var messageId = field.dataset.messageId
+            var submitBtn = document.getElementById("submit-edit-message-id-" + messageId)
+            var wasFieldValid = true
+            field.addEventListener("input", function (e) {
+                var isFieldValid = e.target.value.trim() !== ""
+                if (wasFieldValid !== isFieldValid) field.classList.toggle("is-invalid")
+                submitBtn.disabled = !isFieldValid
+                wasFieldValid = isFieldValid
+            })
+        })
+        var cancelEditButtons = document.getElementsByClassName("cancel-edit-btn")
+        Array.prototype.forEach.call(cancelEditButtons, function (btn) {
+            btn.addEventListener("click", function (e) {
+                e.preventDefault()
+                if (editing !== null) {
+                    editing.classList.add("not-editing")
+                    editing.classList.remove("editing")
+                }
+            })
+        })
+        var textareas = document.querySelectorAll('textarea');
+        Array.prototype.forEach.call(textareas, function (textarea) {
+            textarea.oninput = function () {
+                textarea.style.height = 0;
+                textarea.style.height = textarea.scrollHeight + 'px';
+            }
+        })
+        var wasNewMessageValid = true
+        var newMessageSubmit = document.getElementById("new-message-submit")
+        var newMessageField = document.getElementById("new-message-field")
+        newMessageField.addEventListener("input", function (e) {
+            var isNewMessageValid = e.target.value.trim() !== ""
+            newMessageSubmit.disabled = !isNewMessageValid
+            if (wasNewMessageValid !== isNewMessageValid) newMessageField.classList.toggle("is-invalid")
+            wasNewMessageValid = isNewMessageValid
+        })
+    </script>
+{% endblock %}

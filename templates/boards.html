@@ -1,192 +1,154 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/styles.css">
-    <script type="application/javascript" src="/static/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-          integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
-          crossorigin="anonymous"/>
-    <title>Alueet</title>
-</head>
-<body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Keskustelusovellus</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <form class="d-flex" action="/search" method="get">
-                        <input class="form-control me-2" type="search" name="term" placeholder="Etsi viesteistä"
-                               aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit">Etsi</button>
-                    </form>
-                </li>
-            </ul>
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ session.username }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="/logout">Kirjaudu ulos</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<main class="container">
-    <div class="my-3 p-3 bg-body rounded shadow-sm">
-        <div class="d-flex flex-row justify-content-between align-items-center border-bottom pb-2">
-            <h5 class="mb-0">Alueet</h5>
-            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">Uusi alue
-            </button>
-        </div>
-        <div class="d-flex flex-column">
-            {% for board in boards %}
-                <div class="py-3 mb-0 small lh-sm border-bottom d-flex justify-content-between">
-                    <div>
-                        {% if not board.is_secret or board.is_secret and (session.role == "admin" or board.id in user_private_boards) %}
-                            <a class="text-decoration-none" href="/boards/{{ board.id }}"><strong
-                                    class="text-uppercase">{{ board.name }}</strong></a>
-                        {% else %}
-                            <strong class="text-uppercase">{{ board.name }}</strong>
-                        {% endif %}
-                        {% if board.is_secret %}
-                            <span class="text-muted fw-bold"><i class="fas fa-user-secret"></i></span>
-                        {% endif %}
-                    </div>
-                    <div>
-                        {% if board.last_comment is not none %}
-                            {{ board.thread_count }} <i class="far fa-comments"></i>
-                            {{ board.comment_count }} <i class="far fa-comment"></i>
-                            <span class="py-1 px-2 rounded-2 bg-light">{{ board.last_comment.strftime('%d.%m.%Y %H:%M') }} <i
-                                    class="far fa-clock"></i></span>
-                        {% else %}
-                            Alueella ei viestejä
-                        {% endif %}
-                        {% if session.role == "admin" %}
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#delete-board-modal"
-                                    class="btn btn-link p-0 delete-board-btn" data-board-id="{{ board.id }}"><i
-                                    class="far fa-trash-alt text-danger"></i></button>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-</main>
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Uusi alue</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+{% extends "layout.html" %}
+{% block title %}Alueet{% endblock %}
+{% block content %}
+    <main class="container">
+        <div class="my-3 p-3 bg-body rounded shadow-sm">
+            <div class="d-flex flex-row justify-content-between align-items-center border-bottom pb-2">
+                <h5 class="mb-0">Alueet</h5>
+                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">Uusi alue
+                </button>
             </div>
-            <form action="/boards" method="post" class="needs-validation">
-                <div class="modal-body">
-                    <div class="col position-relative mb-2">
-                        <label for="board_name_field" class="form-label">Alueen nimi</label>
-                        <input type="text" class="form-control" name="board_name" id="new-board-name-field" required>
-                        <div class="invalid-tooltip">
-                            Alueen nimi ei voi olla tyhjä
+            <div class="d-flex flex-column">
+                {% for board in boards %}
+                    <div class="py-3 mb-0 small lh-sm border-bottom d-flex justify-content-between">
+                        <div>
+                            {% if not board.is_secret or board.is_secret and (session.role == "admin" or board.id in user_private_boards) %}
+                                <a class="text-decoration-none" href="/boards/{{ board.id }}"><strong
+                                        class="text-uppercase">{{ board.name }}</strong></a>
+                            {% else %}
+                                <strong class="text-uppercase">{{ board.name }}</strong>
+                            {% endif %}
+                            {% if board.is_secret %}
+                                <span class="text-muted fw-bold"><i class="fas fa-user-secret"></i></span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if board.last_comment is not none %}
+                                {{ board.thread_count }} <i class="far fa-comments"></i>
+                                {{ board.comment_count }} <i class="far fa-comment"></i>
+                                <span class="py-1 px-2 rounded-2 bg-light">{{ board.last_comment.strftime('%d.%m.%Y %H:%M') }} <i
+                                        class="far fa-clock"></i></span>
+                            {% else %}
+                                Alueella ei viestejä
+                            {% endif %}
+                            {% if session.role == "admin" %}
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#delete-board-modal"
+                                        class="btn btn-link p-0 delete-board-btn" data-board-id="{{ board.id }}"><i
+                                        class="far fa-trash-alt text-danger"></i></button>
+                            {% endif %}
                         </div>
                     </div>
-                    <div class="form-check mb-2{% if session.role != "admin" %} d-none{% endif %}">
-                        <input class="form-check-input" type="checkbox" name="is-secret" id="is-secret-toggle">
-                        <label class="form-check-label" for="is-secret-toggle">
-                            Salainen alue
-                        </label>
-                    </div>
-                    <div id="secret-area-list" class="d-none">
-                        <h6>Valitse käyttäjät</h6>
-                        {% for user in users %}
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" id="secret-board-user-{{ user.id }}"
-                                       value="{{ user.id }}" type="checkbox" name="secret-board-user">
-                                <label class="form-check-label" for="secret-board-user-{{ user.id }}">
-                                    {{ user.username }}
-                                </label>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Uusi alue</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/boards" method="post" class="needs-validation">
+                    <div class="modal-body">
+                        <div class="col position-relative mb-2">
+                            <label for="board_name_field" class="form-label">Alueen nimi</label>
+                            <input type="text" class="form-control" name="board_name" id="new-board-name-field"
+                                   required>
+                            <div class="invalid-tooltip">
+                                Alueen nimi ei voi olla tyhjä
                             </div>
-                        {% endfor %}
+                        </div>
+                        <div class="form-check mb-2{% if session.role != "admin" %} d-none{% endif %}">
+                            <input class="form-check-input" type="checkbox" name="is-secret" id="is-secret-toggle">
+                            <label class="form-check-label" for="is-secret-toggle">
+                                Salainen alue
+                            </label>
+                        </div>
+                        <div id="secret-area-list" class="d-none">
+                            <h6>Valitse käyttäjät</h6>
+                            {% for user in users %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" id="secret-board-user-{{ user.id }}"
+                                           value="{{ user.id }}" type="checkbox" name="secret-board-user">
+                                    <label class="form-check-label" for="secret-board-user-{{ user.id }}">
+                                        {{ user.username }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
+                        <button id="submit-new-board" type="submit" class="btn btn-primary" disabled>Tallenna</button>
+                    </div>
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="delete-board-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Poista alue</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Haluatko varmasti poistaa alueen?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
-                    <button id="submit-new-board" type="submit" class="btn btn-primary" disabled>Tallenna</button>
+                    <button type="submit" class="btn btn-primary" id="delete-board-do-delete-btn">Poista alue</button>
                 </div>
-                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-            </form>
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="delete-board-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Poista alue</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Haluatko varmasti poistaa alueen?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
-                <button type="submit" class="btn btn-primary" id="delete-board-do-delete-btn">Poista alue</button>
             </div>
         </div>
     </div>
-</div>
-<script>
-    var doDeleteBtn = document.getElementById("delete-board-do-delete-btn")
-    var deleteBtns = document.getElementsByClassName("delete-board-btn")
-    Array.prototype.forEach.call(deleteBtns, function (btn) {
-        btn.addEventListener("click", function (e) {
-            doDeleteBtn.onclick = function () {
-                window.location = "/boards/" + btn.dataset.boardId + "/delete"
-            }
-        })
-    })
-    var isSecretToggle = document.getElementById("is-secret-toggle")
-    var secretAreaList = document.getElementById("secret-area-list")
-    isSecretToggle.addEventListener("change", function (e) {
-        secretAreaList.classList.toggle("d-none")
-        validateNewBoardForm()
-    })
-    var newBoardWasValid = false
-    var newBoardNameFieldTouched = false
-    var newBoardNameField = document.getElementById("new-board-name-field")
-    var submitNewBoardButton = document.getElementById("submit-new-board")
-    var secretAreaListUsers = document.getElementsByName("secret-board-user")
 
-    function validateNewBoardForm() {
-        var boardNameValid = newBoardNameField.value.trim() !== ""
-        var secretAreaValid = function () {
-            if (!isSecretToggle.checked) return true
-            var valid = false
-            Array.prototype.forEach.call(secretAreaListUsers, function (element) {
-                if (element.checked) valid = true
+    <script>
+        var doDeleteBtn = document.getElementById("delete-board-do-delete-btn")
+        var deleteBtns = document.getElementsByClassName("delete-board-btn")
+        Array.prototype.forEach.call(deleteBtns, function (btn) {
+            btn.addEventListener("click", function (e) {
+                doDeleteBtn.onclick = function () {
+                    window.location = "/boards/" + btn.dataset.boardId + "/delete"
+                }
             })
-            return valid
-        }()
-        if (newBoardNameFieldTouched && newBoardWasValid !== boardNameValid) newBoardNameField.classList.toggle("is-invalid")
-        submitNewBoardButton.disabled = !boardNameValid || !secretAreaValid
-        newBoardWasValid = boardNameValid
-    }
+        })
+        var isSecretToggle = document.getElementById("is-secret-toggle")
+        var secretAreaList = document.getElementById("secret-area-list")
+        isSecretToggle.addEventListener("change", function (e) {
+            secretAreaList.classList.toggle("d-none")
+            validateNewBoardForm()
+        })
+        var newBoardWasValid = false
+        var newBoardNameFieldTouched = false
+        var newBoardNameField = document.getElementById("new-board-name-field")
+        var submitNewBoardButton = document.getElementById("submit-new-board")
+        var secretAreaListUsers = document.getElementsByName("secret-board-user")
 
-    Array.prototype.forEach.call(secretAreaListUsers, function (element) {
-        element.addEventListener("change", validateNewBoardForm)
-    })
-    newBoardNameField.addEventListener("input", function () {
-        validateNewBoardForm()
-        newBoardNameFieldTouched = true
-    })
-</script>
-</body>
-</html>
+        function validateNewBoardForm() {
+            var boardNameValid = newBoardNameField.value.trim() !== ""
+            var secretAreaValid = function () {
+                if (!isSecretToggle.checked) return true
+                var valid = false
+                Array.prototype.forEach.call(secretAreaListUsers, function (element) {
+                    if (element.checked) valid = true
+                })
+                return valid
+            }()
+            if (newBoardNameFieldTouched && newBoardWasValid !== boardNameValid) newBoardNameField.classList.toggle("is-invalid")
+            submitNewBoardButton.disabled = !boardNameValid || !secretAreaValid
+            newBoardWasValid = boardNameValid
+        }
+
+        Array.prototype.forEach.call(secretAreaListUsers, function (element) {
+            element.addEventListener("change", validateNewBoardForm)
+        })
+        newBoardNameField.addEventListener("input", function () {
+            validateNewBoardForm()
+            newBoardNameFieldTouched = true
+        })
+    </script>
+{% endblock %}
