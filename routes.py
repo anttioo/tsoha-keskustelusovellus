@@ -106,7 +106,7 @@ def show_board(board_id):
     if board is None:
         return render_template("board_404.html"), 404
     if board["is_secret"] and board["id"] not in users.get_private_boards(user_id()) and not is_admin():
-        return redirect("/boards")
+        return render_template("board_401.html")
     return render_template("board.html", board=board)
 
 
